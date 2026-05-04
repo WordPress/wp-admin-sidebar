@@ -1,0 +1,266 @@
+/*
+ * Browse-rail styles.
+ *
+ * Phase 1 ships against the WP default dark admin color scheme only. Other
+ * schemes (light, midnight, ocean, sunrise, coffee, ectoplasm, modern) are
+ * Phase-1.1 work.
+ *
+ * Design tokens are CSS custom properties so future token updates are a
+ * one-file change. Values come from the Figma audit (plan 03-contracts.md § 8
+ * "Design tokens").
+ */
+
+:root {
+	--wpcom-sidebar-bg: #1d2327;
+	--wpcom-sidebar-item-fg: #f0f0f1;
+	--wpcom-sidebar-group-label-fg: #71aee2;
+	--wpcom-sidebar-customizer-item-bg: #2c3439;
+	--wpcom-sidebar-drag-source-opacity: 0.3;
+	--wpcom-sidebar-drag-ghost-opacity: 0.95;
+	--wpcom-sidebar-drop-indicator-width: 112px;
+	--wpcom-sidebar-drop-indicator-height: 2px;
+	--wpcom-sidebar-customizer-theme: #3858e9;
+	--wpcom-sidebar-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	--wpcom-sidebar-font-size: 14px;
+	--wpcom-sidebar-line-height: 20px;
+	--wpcom-sidebar-letter-spacing: -0.15px;
+	--wpcom-sidebar-button-font-size: 13px;
+}
+
+/*
+ * Group container. Lives inside #adminmenu as a sibling of core's flat
+ * <li> items; the JS moves classified items into the group's children <ul>
+ * and tags them with data-wpcom-item-id.
+ */
+body.wpcom-sidebar-active .wpcom-sidebar-group {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__header {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 16px;
+	min-height: 34px;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__toggle {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+	color: var( --wpcom-sidebar-group-label-fg );
+	font-family: var( --wpcom-sidebar-font );
+	font-size: 11px;
+	font-weight: 600;
+	line-height: var( --wpcom-sidebar-line-height );
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	text-align: left;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__toggle:focus-visible {
+	outline: 2px solid var( --wpcom-sidebar-customizer-theme );
+	outline-offset: 2px;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__label {
+	flex: 0 0 auto;
+}
+
+/*
+ * Group-level attention dot. Per design (Lucas's Figma 3505:76964), the
+ * group header carries a small red dot when any child has attention; no
+ * numeric count is rendered at the group level. When the group is expanded,
+ * the children render their own indicators so the aggregate dot is
+ * suppressed entirely.
+ */
+body.wpcom-sidebar-active .wpcom-sidebar-group__signal {
+	flex: 0 0 auto;
+	width: 8px;
+	height: 8px;
+	padding: 0;
+	margin-left: 6px;
+	border-radius: 50%;
+	background: #d63638;
+	font-size: 0;
+	color: transparent;
+	display: none;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__signal[data-attention="true"] {
+	display: inline-block;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-sidebar-group__signal {
+	display: none;
+}
+
+/*
+ * wp-admin's `#adminmenu li.menu-top:hover` paints the entire LI blue. Because
+ * our group LI carries the .menu-top class (so it sits flush in #adminmenu's
+ * layout) but contains both a header AND a children list, that hover style
+ * blanket-fills the whole group. Override: keep the LI itself transparent and
+ * defer all hover/active styling to the header inside it.
+ *
+ * Anchor on `#adminmenu` so our specificity beats wp-admin's
+ * `#adminmenu li.menu-top:hover` rule (the same id-anchored selector is in
+ * colors-fresh.css). Without #adminmenu we'd lose the specificity battle and
+ * the LI would still get painted blue.
+ */
+body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top,
+body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top:hover,
+body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top.opensub,
+body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top.wp-has-current-submenu {
+	background-color: transparent;
+}
+
+body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top > .wpcom-sidebar-group__header:hover {
+	background-color: rgba( 240, 240, 241, 0.06 );
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__chevron {
+	flex: 0 0 auto;
+	margin-left: auto;
+	width: 12px;
+	height: 12px;
+	background: currentColor;
+	mask: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill-rule='evenodd' d='M3 5l3 3 3-3z'/%3E%3C/svg%3E" ) no-repeat center;
+	-webkit-mask: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill-rule='evenodd' d='M3 5l3 3 3-3z'/%3E%3C/svg%3E" ) no-repeat center;
+	transition: transform 150ms ease;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-sidebar-group__chevron {
+	transform: rotate( -180deg );
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	body.wpcom-sidebar-active .wpcom-sidebar-group__chevron {
+		transition: none;
+	}
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__customize {
+	flex: 0 0 auto;
+	width: 24px;
+	height: 24px;
+	margin-left: 8px;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	color: var( --wpcom-sidebar-group-label-fg );
+	opacity: 0.7;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__customize:hover:not( :disabled ) {
+	opacity: 1;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__customize:disabled {
+	cursor: default;
+	opacity: 0.4;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__customize::before {
+	content: "";
+	width: 20px;
+	height: 20px;
+	background: currentColor;
+	/* Lucas's list-view icon (Figma 3505:74996). Loaded as an external SVG so
+	 * the path stays editable as real markup, not a URL-encoded data URI. The
+	 * mask uses the SVG's alpha channel; visible color comes from `background:
+	 * currentColor` above so the icon inherits the group label color. */
+	mask: url( "icons/list-view.svg" ) no-repeat center / contain;
+	-webkit-mask: url( "icons/list-view.svg" ) no-repeat center / contain;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group__customize:focus-visible {
+	outline: 2px solid var( --wpcom-sidebar-customizer-theme );
+	outline-offset: 2px;
+}
+
+/*
+ * Children list. Collapsed by default (height: 0) until data-expanded="true".
+ */
+body.wpcom-sidebar-active .wpcom-sidebar-group__children {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	max-height: 0;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-sidebar-group__children {
+	max-height: none;
+}
+
+/*
+ * Item-level signal (numeric badge, inline text, inline icon). These render
+ * inline next to the item title inside the <a> link.
+ */
+body.wpcom-sidebar-active .wpcom-sidebar-item__badge {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 0 6px;
+	min-width: 16px;
+	height: 16px;
+	border-radius: 8px;
+	background: #d63638;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 16px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-item__inline-text {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 0 4px;
+	font-size: 10px;
+	font-weight: 600;
+	color: var( --wpcom-sidebar-customizer-theme );
+	border: 1px solid currentColor;
+	border-radius: 2px;
+	line-height: 14px;
+	text-transform: uppercase;
+}
+
+body.wpcom-sidebar-active .wpcom-sidebar-item__inline-icon {
+	margin-left: 6px;
+	font-size: 14px;
+	vertical-align: middle;
+	color: currentColor;
+}
+
+/*
+ * Flash mitigation. When the user has a saved layout for this site, the
+ * bootstrap adds `wpcom-sidebar-pending-delta` to <body>. We hide the entire
+ * sidebar until the JS finishes wrapping + applying the delta and sets
+ * `data-wpcom-sidebar-ready="1"`. Without this, items render in their core
+ * positions for one paint cycle and then jump into the saved positions —
+ * disorienting on every page load.
+ *
+ * Without a saved delta the body class isn't present, so this rule is inert
+ * and the sidebar paints normally during wrap.
+ */
+body.wpcom-sidebar-pending-delta #adminmenu:not([data-wpcom-sidebar-ready="1"]) {
+	visibility: hidden;
+}
+
+body.wpcom-sidebar-pending-delta #adminmenu[data-wpcom-sidebar-ready="1"] {
+	visibility: visible;
+}

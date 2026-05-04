@@ -1,0 +1,322 @@
+/*
+ * Customizer-mode styles.
+ *
+ * Loaded on demand alongside customizer.js when the user enters customizer
+ * mode. Scoped under `body.wpcom-sidebar-mode-customize` so it only applies
+ * during the mode; the body class is toggled on enter / exit.
+ *
+ * Design tokens come from styles.css (A.1's base styles).
+ *
+ * Contract reference: plan 03-contracts.md § 8 (DOM during customizer mode)
+ *                     and the design-tokens table in the same section.
+ */
+
+/*
+ * Customizer-mode reassignable rows.
+ *
+ * Structural choice: the grip and more-options spans live INSIDE the wp-admin
+ * `<a class="menu-top">` element (prepended/appended at decorate time). With
+ * that layout, wp-admin's natural `#adminmenu a:hover` and `#adminmenu li.opensub
+ * > a.menu-top` rules paint the entire row uniformly — there are NO custom
+ * background-color or color overrides in this stylesheet. The grip column
+ * picks up the same hover bg as the icon and label because they all share
+ * the same `<a>` parent.
+ *
+ * Per 04-interaction-spec.md (Figma 3505:75220): "All plugin items change
+ * the background color and ... the cursor changes from the pointer to the
+ * hand when hover over the whole item."
+ *
+ * The LI gets a static customizer-mode background (`#2c3439`) so non-hovered
+ * rows still read as visually distinct from the rest of the sidebar.
+ */
+body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable {
+	background: var( --wpcom-sidebar-customizer-item-bg, #2c3439 );
+	cursor: grab;
+	position: relative;
+}
+
+/*
+ * `<a>` becomes a flex row so the grip, the wp-admin icon, the label, and the
+ * more-options span lay out side by side. Padding is 0 because flex children
+ * own their own spacing; the wp-admin defaults (float left on the icon, left
+ * padding on the label) need to be reset so they participate in the flex
+ * layout.
+ */
+body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a {
+	display: flex;
+	align-items: center;
+	padding: 0;
+	cursor: grab;
+}
+
+body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a > .wp-menu-image {
+	flex: 0 0 auto;
+	float: none;
+	width: 36px;
+	height: 34px;
+}
+
+body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a > .wp-menu-name {
+	flex: 1 1 auto;
+	padding: 0;
+	min-width: 0;
+}
+
+body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable:active,
+body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a:active {
+	cursor: grabbing;
+}
+
+body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__grip {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 34px;
+	color: inherit;
+	cursor: grab;
+	font-size: 14px;
+	line-height: 1;
+}
+
+body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__grip:focus-visible {
+	outline: 2px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	outline-offset: -2px;
+}
+
+body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 34px;
+	color: inherit;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 1;
+}
+
+body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more:focus-visible {
+	outline: 2px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	outline-offset: -2px;
+}
+
+/* Floating ghost element follows the cursor while dragging. The ghost is a
+ * shallow clone of the source row so it carries the same grip + dashicon +
+ * label as the live row (Figma 3505:75323). */
+.wpcom-sidebar-drag-ghost {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 100000;
+	pointer-events: none;
+	display: flex;
+	align-items: center;
+	min-width: 144px;
+	padding: 0;
+	background: var( --wpcom-sidebar-customizer-item-bg, #2c3439 );
+	color: var( --wpcom-sidebar-item-fg, #f0f0f1 );
+	font-size: var( --wpcom-sidebar-font-size, 14px );
+	font-family: var( --wpcom-sidebar-font, 'SF Pro Text', sans-serif );
+	border-radius: 4px;
+	opacity: var( --wpcom-sidebar-drag-ghost-opacity, 0.95 );
+	box-shadow: 0 4px 12px rgba( 0, 0, 0, 0.4 );
+}
+
+/* Inside the ghost, suppress the cloned link's interactive styling and tighten
+ * the layout so the grip + icon + label render as a single clean row. */
+.wpcom-sidebar-drag-ghost > a {
+	flex: 1 1 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px 6px 0;
+	background: transparent;
+	color: inherit;
+	text-decoration: none;
+	pointer-events: none;
+}
+
+.wpcom-sidebar-drag-ghost .wp-menu-image {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	flex: 0 0 auto;
+}
+
+.wpcom-sidebar-drag-ghost .wpcom-sidebar-item__grip {
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
+	margin: 0 6px 0 8px;
+	background: transparent;
+	border: 0;
+	color: inherit;
+}
+
+/* The source row fades while it follows the cursor. */
+body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--dragging {
+	opacity: var( --wpcom-sidebar-drag-source-opacity, 0.3 );
+}
+
+/* Drop indicator line drawn between rows. */
+li.wpcom-sidebar-drop-indicator {
+	list-style: none;
+	margin: 0 0 0 16px;
+	padding: 0;
+	height: var( --wpcom-sidebar-drop-indicator-height, 2px );
+	width: var( --wpcom-sidebar-drop-indicator-width, 112px );
+	background: var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	pointer-events: none;
+}
+
+/* Customizer-only: viewport-bound the sidebar wrap and turn it into a flex
+ * column so the plugin list scrolls internally and the Save / Cancel footer
+ * stays pinned to the viewport bottom (DES-578).
+ *
+ * Default (non-customizer) mode keeps wp-admin's natural `body.sticky-menu`
+ * behaviour: the wrap stays fixed but its `top` is dynamically recomputed
+ * as the page scrolls so items past the fold come into view via page
+ * scroll. That mechanism doesn't work in customizer mode because the
+ * footer can't track a moving wrap, so we override it just here.
+ *
+ * The `top` override beats `body.sticky-menu`'s calculated top.
+ *
+ * Phase A is scoped to expanded sidebar; mobile / folded states defer to
+ * wp-admin defaults until the collapsed-state design lands.
+ */
+body.wpcom-sidebar-mode-customize #adminmenuwrap {
+	top: var( --wp-admin--admin-bar--height, 32px );
+	bottom: 0;
+	height: auto;
+	display: flex;
+	flex-direction: column;
+}
+
+body.wpcom-sidebar-mode-customize #adminmenu {
+	flex: 1 1 auto;
+	/* min-height: 0 lets the flex item shrink below content height so
+	 * overflow-y: auto can take effect — without it, the natural content
+	 * height wins and the parent overflows again. */
+	min-height: 0;
+	overflow-y: auto;
+	/* Hide horizontal overflow. Customizer rows (grip + icon + long label
+	 * + more-options) can exceed the 160 px sidebar width on long plugin
+	 * names; without overflow-x: hidden, browsers add a horizontal
+	 * scrollbar above the customizer footer. Label truncation is being
+	 * addressed separately in DES-577. */
+	overflow-x: hidden;
+	/* Hide the vertical scrollbar visually — the footer's upward soft
+	 * shadow (rule below) is the scroll-cue affordance. Scrolling still
+	 * works via mouse-wheel, trackpad, keyboard, and touch. Without this
+	 * the scrollbar appears as soon as the plugin list overflows and
+	 * (a) takes up sidebar width, (b) clutters the visual. */
+	scrollbar-width: none;            /* Firefox 64+, Safari 18.2+ */
+	-ms-overflow-style: none;         /* legacy IE/Edge */
+}
+
+body.wpcom-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+}
+
+/* Save / Cancel dock at the bottom of the sidebar. Flex: 0 0 auto so the
+ * footer takes its natural height and the plugin list above absorbs the
+ * remaining viewport space.
+ *
+ * The upward soft shadow is the scroll-cue: when the plugin list overflows
+ * its visible area, content fades into the shadow above the footer,
+ * hinting that there's more above the fold. Always present even when
+ * content fits — adds a subtle visual separation from the footer that
+ * doesn't depend on JS scroll-tracking. */
+.wpcom-sidebar-customize-footer {
+	flex: 0 0 auto;
+	display: flex;
+	/* Stacked, not side-by-side, per the Figma prototype. DOM order
+	 * is Cancel → Save (preserves the existing horizontal hierarchy
+	 * where Cancel was left / secondary and Save was right / primary),
+	 * so in column mode Cancel renders on top, Save below. Buttons
+	 * fill the wrap's natural width via the default cross-axis
+	 * stretch — no hardcoded width anywhere. */
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px 12px;
+	background: var( --wpcom-sidebar-bg, #1d2327 );
+	border-top: 1px solid rgba( 240, 240, 241, 0.1 );
+	box-shadow: 0 -8px 12px -8px rgba( 0, 0, 0, 0.5 );
+}
+
+.wpcom-sidebar-customize-footer__cancel,
+.wpcom-sidebar-customize-footer__save {
+	/* No flex: 1 in column mode — buttons take their natural height
+	 * and stretch to the wrap's width via align-items (default
+	 * `stretch` on the flex parent). */
+	flex: 0 0 auto;
+	padding: 6px 12px;
+	border-radius: 3px;
+	font-size: var( --wpcom-sidebar-button-font-size, 13px );
+	font-family: var( --wpcom-sidebar-font, 'SF Pro Text', sans-serif );
+	cursor: pointer;
+}
+
+.wpcom-sidebar-customize-footer__cancel {
+	background: transparent;
+	border: 1px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	color: var( --wpcom-sidebar-customizer-theme, #3858e9 );
+}
+
+.wpcom-sidebar-customize-footer__save {
+	background: var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	border: 1px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	color: #fff;
+}
+
+.wpcom-sidebar-customize-footer__save[disabled] {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+/* Hide the collapse-menu link during customizer mode (replaced by the footer). */
+body.wpcom-sidebar-mode-customize #collapse-menu {
+	display: none;
+}
+
+/* Move-to menu popup. Positioned with inline styles by JS. */
+.wpcom-sidebar-move-menu {
+	z-index: 100001;
+	margin: 0;
+	padding: 4px 0;
+	list-style: none;
+	background: var( --wpcom-sidebar-bg, #1d2327 );
+	border: 1px solid rgba( 240, 240, 241, 0.15 );
+	border-radius: 4px;
+	min-width: 180px;
+	box-shadow: 0 6px 20px rgba( 0, 0, 0, 0.4 );
+}
+
+.wpcom-sidebar-move-menu li {
+	margin: 0;
+	padding: 0;
+}
+
+.wpcom-sidebar-move-menu__item {
+	display: block;
+	width: 100%;
+	padding: 6px 12px;
+	border: 0;
+	background: transparent;
+	color: var( --wpcom-sidebar-item-fg, #f0f0f1 );
+	text-align: left;
+	font-size: var( --wpcom-sidebar-font-size, 14px );
+	cursor: pointer;
+}
+
+.wpcom-sidebar-move-menu__item:hover,
+.wpcom-sidebar-move-menu__item:focus-visible {
+	background: var( --wpcom-sidebar-customizer-item-bg, #2c3439 );
+	outline: none;
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  "List view" icon — three horizontal lines at staggered x-offsets (top
+  aligned left, middle indented, bottom right-aligned). Path lifted verbatim
+  from Lucas's Figma node 3505:74996. Used as the customizer-mode entry-point
+  icon on the plugins group header. When loaded via CSS `mask`, only the
+  alpha channel matters; the visible color comes from `background: currentColor`
+  on the host element.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 10.4167" fill="currentColor">
+	<path d="M0 0H9.16667V1.25H0V0ZM2.91667 4.58333H12.0833V5.83333H2.91667V4.58333ZM15 9.16667H5.83333V10.4167H15V9.16667Z"/>
+</svg>
