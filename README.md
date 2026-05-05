@@ -15,9 +15,9 @@ It is built incrementally on top of wp-admin: plain ES modules, no React, no Gut
 
 ## Status
 
-This is **v0.1.x — early prototype, public from day 1**. Inspired by Matt Mullenweg's ["Rethinking left navigation"](https://make.wordpress.org/core/2026/03/24/rethinking-left-navigation/) Make/Core post and the WordPress design teams' explorations. We are pairing with the WordPress.com / Automattic engineering effort that ships this same code as a managed-WordPress experience first.
+This is **v0.1.x — early prototype, public from day 1**. Inspired by Matt Mullenweg's ["Rethinking left navigation"](https://make.wordpress.org/core/2026/03/24/rethinking-left-navigation/) Make/Core post and the WordPress design teams' explorations.
 
-The plugin is functional and shipping behind a sticker on a subset of WordPress.com sites today. The public-installable plugin shape is what this repo is for. See [`docs/roadmap.md`](docs/roadmap.md) for what's locked, what's open, and what's next.
+The plugin is functional and shipping behind a sticker on a subset of WordPress.com sites. The public-installable plugin shape is what this repo is for. See [`docs/roadmap.md`](docs/roadmap.md) for what's locked, what's open, and what's next.
 
 ## Try it
 
