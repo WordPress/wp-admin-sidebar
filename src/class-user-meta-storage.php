@@ -3,13 +3,15 @@
  * Default Sidebar_Layout_Storage implementation.
  *
  * Portable to any WordPress install. Reads from / writes to the user_meta key
- * `wpcom_admin_sidebar_layouts`. The `wpcom_` prefix is intentionally kept even
- * on generic WP installs (Phase B) so users who move between environments see
- * the same key; renaming is a Phase-B branding decision (plan open question 10).
+ * `wpcom_admin_sidebar_layouts`.
  *
- * Contract reference: plan 03-contracts.md § 9.
+ * The `wpcom_` prefix on the meta key is a backward-compat carry-over from the
+ * plugin's incubation as a WordPress.com mu-plugin. Renaming the key would
+ * orphan saved layouts on any install that already has data. A migration path
+ * (read both keys, write the new one) is on the v0.2.x roadmap; until then,
+ * the existing key is the durable identifier.
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,9 +23,10 @@ if ( class_exists( 'WP_User_Meta_Storage' ) ) {
 }
 
 /**
- * User-meta-backed default storage. Used on any non-WPCOM install and as the
- * fallback when no integration layer overrides the `wpcom_admin_sidebar_storage`
- * filter.
+ * User-meta-backed default storage. Used as the fallback whenever no host
+ * adapter overrides the `wp_admin_sidebar_storage` filter. Hosts that need
+ * a different persistence model (e.g., a network-wide attribute that roams
+ * across sites) can bind their own `Sidebar_Layout_Storage` implementation.
  */
 class WP_User_Meta_Storage implements Sidebar_Layout_Storage {
 

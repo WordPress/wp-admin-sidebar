@@ -11,17 +11,17 @@
  *
  * sessionStorage shape (keyed per site so multi-blog admins don't collide):
  *
- *   wpcom-sidebar:groups:<site_id> = { "plugins": true, ... }
+ *   wp-admin-sidebar:groups:<site_id> = { "plugins": true, ... }
  *
  * Reduced-motion respect is in CSS (chevron rotation animation suppressed
  * when prefers-reduced-motion: reduce).
  *
  * Contract reference: plan 04-interaction-spec.md.
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
-const STORAGE_PREFIX = 'wpcom-sidebar:groups:';
+const STORAGE_PREFIX = 'wp-admin-sidebar:groups:';
 
 /**
  * Wire the expand/collapse behaviour for every group container in the sidebar.
@@ -34,7 +34,7 @@ export function applyExpandCollapse( sidebar, navModel, ctx ) {
 	const stored = readStoredState( ctx.siteId );
 	const autoExpandGroup = findAutoExpandGroup( navModel, ctx.currentUrl );
 
-	const groups = sidebar.querySelectorAll( '.wpcom-sidebar-group' );
+	const groups = sidebar.querySelectorAll( '.wp-admin-sidebar-group' );
 	for ( const groupEl of groups ) {
 		if ( ! ( groupEl instanceof HTMLElement ) ) {
 			continue;
@@ -43,7 +43,7 @@ export function applyExpandCollapse( sidebar, navModel, ctx ) {
 		const expanded = decideInitialState( groupId, stored, autoExpandGroup );
 		applyState( groupEl, expanded );
 
-		const toggle = groupEl.querySelector( '.wpcom-sidebar-group__toggle' );
+		const toggle = groupEl.querySelector( '.wp-admin-sidebar-group__toggle' );
 		if ( toggle instanceof HTMLButtonElement ) {
 			toggle.addEventListener( 'click', () => {
 				const next = ! ( groupEl.getAttribute( 'data-expanded' ) === 'true' );
@@ -129,11 +129,11 @@ function findAutoExpandGroup( navModel, currentUrl ) {
  */
 function applyState( groupEl, expanded ) {
 	groupEl.setAttribute( 'data-expanded', expanded ? 'true' : 'false' );
-	const toggle = groupEl.querySelector( '.wpcom-sidebar-group__toggle' );
+	const toggle = groupEl.querySelector( '.wp-admin-sidebar-group__toggle' );
 	if ( toggle instanceof HTMLButtonElement ) {
 		toggle.setAttribute( 'aria-expanded', expanded ? 'true' : 'false' );
 	}
-	const children = groupEl.querySelector( ':scope > .wpcom-sidebar-group__children' );
+	const children = groupEl.querySelector( ':scope > .wp-admin-sidebar-group__children' );
 	if ( children instanceof HTMLElement ) {
 		if ( expanded ) {
 			children.removeAttribute( 'inert' );

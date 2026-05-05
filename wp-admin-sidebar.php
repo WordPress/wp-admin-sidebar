@@ -1,20 +1,15 @@
 <?php
 /**
  * Plugin Name:       WP Admin Sidebar
- * Plugin URI:        https://github.com/Automattic/wp-admin-sidebar
- * Description:       A grouped, customisable left navigation for any WordPress site. Plugin items collapse into a single "Plugins" group at the bottom of the sidebar; per-user reorder via drag, keyboard, or a "Move to" menu, persisted across sessions. Opt-in per user via an admin bar toggle. Doesn't change core, fully reverts on deactivation.
- * Version:           0.1.0
+ * Plugin URI:        https://github.com/WordPress/wp-admin-sidebar
+ * Description:       Improves the wp-admin sidebar, starting with personal rearrangement of items and a curated "Plugins" group that consolidates plugin-added entries at the bottom. Per-user, opt-in via an admin-bar toggle, fully reverts on deactivation.
+ * Version:           0.1.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Christos Koumenides, Lucas Mendes
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       wp-admin-sidebar
- *
- * Note: this repo is currently staging at github.com/Automattic/wp-admin-sidebar.
- * Will transfer to github.com/WordPress/wp-admin-sidebar (community-branded) once
- * a WordPress-org Owner accepts the inbound transfer. Plugin URI updates at that
- * point. See docs/roadmap.md for the migration sequence.
  *
  * @package WP_Admin_Sidebar
  */
@@ -24,15 +19,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────
-define( 'WP_ADMIN_SIDEBAR_VERSION', '0.1.0' );
+define( 'WP_ADMIN_SIDEBAR_VERSION', '0.1.1' );
 define( 'WP_ADMIN_SIDEBAR_FILE', __FILE__ );
 define( 'WP_ADMIN_SIDEBAR_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WP_ADMIN_SIDEBAR_URL', plugin_dir_url( __FILE__ ) );
 
 // ─── Mid-deploy / partial-load safety ──────────────────────────────────────
-// Verify all required files are present before requiring them. Mirrors the
-// pattern from the wpcom mu-plugin (where rsync deploys files non-deterministically).
-// Defensive on plain WP too.
+// Verify all required files are present before requiring them. Defensive
+// against rsync-style deploys where files land in non-deterministic order
+// (so this top-level bootstrap can briefly be live before its required
+// /src/ companions arrive). Cheap to do; protects against fatal mid-deploy.
 $wp_admin_sidebar_required_files = array(
 	__DIR__ . '/src/interface-sidebar-storage.php',
 	__DIR__ . '/src/class-user-meta-storage.php',
@@ -152,14 +148,14 @@ add_action(
 		$ver = WP_ADMIN_SIDEBAR_VERSION;
 
 		wp_enqueue_style(
-			'wpcom-admin-sidebar-browse-rail',
+			'wp-admin-sidebar-browse-rail',
 			$dir . 'src/browse-rail/styles.css',
 			array(),
 			$ver . '.' . ( file_exists( $styles_path ) ? filemtime( $styles_path ) : '0' )
 		);
 
 		wp_enqueue_script(
-			'wpcom-admin-sidebar-browse-rail',
+			'wp-admin-sidebar-browse-rail',
 			$dir . 'src/browse-rail/browse-rail.js',
 			array(),
 			$ver . '.' . $max_mtime,
@@ -171,7 +167,7 @@ add_action(
 add_filter(
 	'script_loader_tag',
 	static function ( $tag, $handle ) {
-		if ( 'wpcom-admin-sidebar-browse-rail' !== $handle ) {
+		if ( 'wp-admin-sidebar-browse-rail' !== $handle ) {
 			return $tag;
 		}
 		return str_replace( '<script ', '<script type="module" ', $tag );
@@ -198,7 +194,7 @@ add_filter(
 		if ( ! $enabled ) {
 			return $classes;
 		}
-		$classes .= ' wpcom-sidebar-active';
+		$classes .= ' wp-admin-sidebar-active';
 
 		$storage = apply_filters( 'wp_admin_sidebar_storage', new WP_User_Meta_Storage() );
 		// Legacy alias bridge — drop in v0.2.x.
@@ -216,7 +212,7 @@ add_filter(
 				! empty( $layouts[ $site_id ]['overrides'] ) &&
 				is_array( $layouts[ $site_id ]['overrides'] )
 			) {
-				$classes .= ' wpcom-sidebar-pending-delta';
+				$classes .= ' wp-admin-sidebar-pending-delta';
 			}
 		}
 

@@ -3,16 +3,14 @@
  * Builds the immutable nav model from $menu / $submenu.
  *
  * Hooked at `in_admin_header` priority 1. We deliberately do NOT hook on
- * `admin_menu` at any priority: WooCommerce Navigation registers at
- * admin_menu PHP_INT_MAX (CoreMenu.php:43) and WPCOM's own jetpack-mu-wpcom
- * runs late mutators at priority 999999. Reading inside admin_menu is
+ * `admin_menu` at any priority: real-world plugins register at very late
+ * priorities (e.g., WooCommerce Navigation at admin_menu PHP_INT_MAX, and
+ * managed-host integrations like WordPress.com's mu-plugins run late
+ * mutators at priority 999999). Reading inside admin_menu is therefore
  * non-deterministic; reading at in_admin_header priority 1 is after every
  * admin_menu callback has finished and before the sidebar is rendered.
  *
- * Contract reference: plan 02-architecture.md (hook table) and
- *                     plan 03-contracts.md § 1, 2.
- *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -56,8 +54,8 @@ class Sidebar_Classifier {
 		}
 
 		// Default: false. Host adapter flips it true when its predicate agrees
-		// (e.g., WPCOM blog sticker). Plain-WP bootstrap flips it true based on
-		// the per-user opt-in admin-bar toggle.
+		// (e.g., a per-blog feature sticker on a managed host). Plain-WP
+		// bootstrap flips it true based on the per-user opt-in admin-bar toggle.
 		$enabled = apply_filters( 'wp_admin_sidebar_enabled', false, $user_id );
 		// Legacy alias bridge — drop in v0.2.x.
 		$enabled = apply_filters_deprecated(
@@ -350,7 +348,7 @@ class Sidebar_Classifier {
 	 */
 	private static function group_title( string $group_id ): string {
 		$titles = array(
-			'plugins' => __( 'Plugins', 'wpcom-admin-sidebar' ),
+			'plugins' => __( 'Plugins', 'wp-admin-sidebar' ),
 		);
 		if ( isset( $titles[ $group_id ] ) ) {
 			return $titles[ $group_id ];

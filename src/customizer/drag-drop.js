@@ -10,9 +10,9 @@
  *                     plan 03-contracts.md § 8 (DOM shape).
  */
 
-const GHOST_CLASS = 'wpcom-sidebar-drag-ghost';
-const INDICATOR_CLASS = 'wpcom-sidebar-drop-indicator';
-const SOURCE_DRAGGING = 'wpcom-sidebar-item--dragging';
+const GHOST_CLASS = 'wp-admin-sidebar-drag-ghost';
+const INDICATOR_CLASS = 'wp-admin-sidebar-drop-indicator';
+const SOURCE_DRAGGING = 'wp-admin-sidebar-item--dragging';
 
 /**
  * Attach drag-drop handlers to the sidebar root for the customizer mode.
@@ -41,15 +41,15 @@ export function attachDragDrop( sidebar, controller ) {
 		if ( ! target ) {
 			return;
 		}
-		if ( target.closest( '.wpcom-sidebar-item__more' ) ) {
+		if ( target.closest( '.wp-admin-sidebar-item__more' ) ) {
 			return;
 		}
-		const li = target.closest( 'li.wpcom-sidebar-item--reassignable' );
+		const li = target.closest( 'li.wp-admin-sidebar-item--reassignable' );
 		if ( ! li ) {
 			return;
 		}
 		ev.preventDefault();
-		const itemId = li.getAttribute( 'data-wpcom-item-id' );
+		const itemId = li.getAttribute( 'data-wp-admin-sidebar-item-id' );
 		if ( ! itemId ) {
 			return;
 		}
@@ -136,12 +136,12 @@ export function attachDragDrop( sidebar, controller ) {
 		// (core, post-adminmenu notices) that don't accept drops.
 		const elements = document.elementsFromPoint( x, y );
 		for ( const el of elements ) {
-			const li = el.closest( 'li.menu-top, li.wpcom-sidebar-group' );
+			const li = el.closest( 'li.menu-top, li.wp-admin-sidebar-group' );
 			if ( ! li || li === activeItem.li ) {
 				continue;
 			}
-			if ( li.classList.contains( 'wpcom-sidebar-group' ) ) {
-				const childList = li.querySelector( ':scope > .wpcom-sidebar-group__children' );
+			if ( li.classList.contains( 'wp-admin-sidebar-group' ) ) {
+				const childList = li.querySelector( ':scope > .wp-admin-sidebar-group__children' );
 				if ( ! childList ) continue;
 				if ( li.getAttribute( 'data-expanded' ) !== 'true' ) {
 					// Drop on a collapsed group header → land at the end of that
@@ -164,7 +164,7 @@ export function attachDragDrop( sidebar, controller ) {
 			const above = y < rect.top + rect.height / 2;
 			const container = li.parentElement;
 			if ( ! container ) continue;
-			const groupContainer = container.closest( 'li.wpcom-sidebar-group' );
+			const groupContainer = container.closest( 'li.wp-admin-sidebar-group' );
 			const baseIndex = Array.prototype.indexOf.call( container.children, li );
 			let slot = above ? baseIndex : baseIndex + 1;
 			// If the source is in the same container at a lower index, dropping
@@ -246,7 +246,7 @@ function createGhost( li ) {
 		cloned.removeAttribute( 'href' );
 		cloned.setAttribute( 'aria-hidden', 'true' );
 		cloned.setAttribute( 'tabindex', '-1' );
-		cloned.querySelectorAll( '.wp-submenu, .wp-submenu-wrap, .wpcom-sidebar-item__more' ).forEach( ( el ) => el.remove() );
+		cloned.querySelectorAll( '.wp-submenu, .wp-submenu-wrap, .wp-admin-sidebar-item__more' ).forEach( ( el ) => el.remove() );
 		ghost.appendChild( cloned );
 	}
 
@@ -265,7 +265,7 @@ function createGhost( li ) {
  * @returns {Position}
  */
 export function positionForElement( li ) {
-	const groupContainer = li.parentElement && li.parentElement.closest( 'li.wpcom-sidebar-group' );
+	const groupContainer = li.parentElement && li.parentElement.closest( 'li.wp-admin-sidebar-group' );
 	const siblings = li.parentElement ? Array.prototype.indexOf.call( li.parentElement.children, li ) : 0;
 	if ( groupContainer ) {
 		return {

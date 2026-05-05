@@ -11,34 +11,34 @@
  */
 
 :root {
-	--wpcom-sidebar-bg: #1d2327;
-	--wpcom-sidebar-item-fg: #f0f0f1;
-	--wpcom-sidebar-group-label-fg: #71aee2;
-	--wpcom-sidebar-customizer-item-bg: #2c3439;
-	--wpcom-sidebar-drag-source-opacity: 0.3;
-	--wpcom-sidebar-drag-ghost-opacity: 0.95;
-	--wpcom-sidebar-drop-indicator-width: 112px;
-	--wpcom-sidebar-drop-indicator-height: 2px;
-	--wpcom-sidebar-customizer-theme: #3858e9;
-	--wpcom-sidebar-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-	--wpcom-sidebar-font-size: 14px;
-	--wpcom-sidebar-line-height: 20px;
-	--wpcom-sidebar-letter-spacing: -0.15px;
-	--wpcom-sidebar-button-font-size: 13px;
+	--wp-admin-sidebar-bg: #1d2327;
+	--wp-admin-sidebar-item-fg: #f0f0f1;
+	--wp-admin-sidebar-group-label-fg: #71aee2;
+	--wp-admin-sidebar-customizer-item-bg: #2c3439;
+	--wp-admin-sidebar-drag-source-opacity: 0.3;
+	--wp-admin-sidebar-drag-ghost-opacity: 0.95;
+	--wp-admin-sidebar-drop-indicator-width: 112px;
+	--wp-admin-sidebar-drop-indicator-height: 2px;
+	--wp-admin-sidebar-customizer-theme: #3858e9;
+	--wp-admin-sidebar-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	--wp-admin-sidebar-font-size: 14px;
+	--wp-admin-sidebar-line-height: 20px;
+	--wp-admin-sidebar-letter-spacing: -0.15px;
+	--wp-admin-sidebar-button-font-size: 13px;
 }
 
 /*
  * Group container. Lives inside #adminmenu as a sibling of core's flat
  * <li> items; the JS moves classified items into the group's children <ul>
- * and tags them with data-wpcom-item-id.
+ * and tags them with data-wp-admin-sidebar-item-id.
  */
-body.wpcom-sidebar-active .wpcom-sidebar-group {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__header {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__header {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -47,7 +47,7 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__header {
 	min-height: 34px;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__toggle {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__toggle {
 	flex: 1;
 	display: flex;
 	align-items: center;
@@ -57,22 +57,22 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__toggle {
 	padding: 0;
 	margin: 0;
 	cursor: pointer;
-	color: var( --wpcom-sidebar-group-label-fg );
-	font-family: var( --wpcom-sidebar-font );
+	color: var( --wp-admin-sidebar-group-label-fg );
+	font-family: var( --wp-admin-sidebar-font );
 	font-size: 11px;
 	font-weight: 600;
-	line-height: var( --wpcom-sidebar-line-height );
+	line-height: var( --wp-admin-sidebar-line-height );
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	text-align: left;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__toggle:focus-visible {
-	outline: 2px solid var( --wpcom-sidebar-customizer-theme );
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__toggle:focus-visible {
+	outline: 2px solid var( --wp-admin-sidebar-customizer-theme );
 	outline-offset: 2px;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__label {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__label {
 	flex: 0 0 auto;
 }
 
@@ -83,7 +83,7 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__label {
  * the children render their own indicators so the aggregate dot is
  * suppressed entirely.
  */
-body.wpcom-sidebar-active .wpcom-sidebar-group__signal {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__signal {
 	flex: 0 0 auto;
 	width: 8px;
 	height: 8px;
@@ -96,11 +96,11 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__signal {
 	display: none;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__signal[data-attention="true"] {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__signal[data-attention="true"] {
 	display: inline-block;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-sidebar-group__signal {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-admin-sidebar-group__signal {
 	display: none;
 }
 
@@ -116,18 +116,18 @@ body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-side
  * colors-fresh.css). Without #adminmenu we'd lose the specificity battle and
  * the LI would still get painted blue.
  */
-body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top,
-body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top:hover,
-body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top.opensub,
-body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top.wp-has-current-submenu {
+body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top,
+body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top:hover,
+body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top.opensub,
+body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top.wp-has-current-submenu {
 	background-color: transparent;
 }
 
-body.wpcom-sidebar-active #adminmenu li.wpcom-sidebar-group.menu-top > .wpcom-sidebar-group__header:hover {
+body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top > .wp-admin-sidebar-group__header:hover {
 	background-color: rgba( 240, 240, 241, 0.06 );
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__chevron {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__chevron {
 	flex: 0 0 auto;
 	margin-left: auto;
 	width: 12px;
@@ -138,17 +138,17 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__chevron {
 	transition: transform 150ms ease;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-sidebar-group__chevron {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-admin-sidebar-group__chevron {
 	transform: rotate( -180deg );
 }
 
 @media ( prefers-reduced-motion: reduce ) {
-	body.wpcom-sidebar-active .wpcom-sidebar-group__chevron {
+	body.wp-admin-sidebar-active .wp-admin-sidebar-group__chevron {
 		transition: none;
 	}
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__customize {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize {
 	flex: 0 0 auto;
 	width: 24px;
 	height: 24px;
@@ -157,23 +157,23 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__customize {
 	border: 0;
 	padding: 0;
 	cursor: pointer;
-	color: var( --wpcom-sidebar-group-label-fg );
+	color: var( --wp-admin-sidebar-group-label-fg );
 	opacity: 0.7;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__customize:hover:not( :disabled ) {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:hover:not( :disabled ) {
 	opacity: 1;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__customize:disabled {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:disabled {
 	cursor: default;
 	opacity: 0.4;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__customize::before {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize::before {
 	content: "";
 	width: 20px;
 	height: 20px;
@@ -186,15 +186,15 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__customize::before {
 	-webkit-mask: url( "icons/list-view.svg" ) no-repeat center / contain;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group__customize:focus-visible {
-	outline: 2px solid var( --wpcom-sidebar-customizer-theme );
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:focus-visible {
+	outline: 2px solid var( --wp-admin-sidebar-customizer-theme );
 	outline-offset: 2px;
 }
 
 /*
  * Children list. Collapsed by default (height: 0) until data-expanded="true".
  */
-body.wpcom-sidebar-active .wpcom-sidebar-group__children {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__children {
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -202,7 +202,7 @@ body.wpcom-sidebar-active .wpcom-sidebar-group__children {
 	max-height: 0;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-sidebar-group__children {
+body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-admin-sidebar-group__children {
 	max-height: none;
 }
 
@@ -210,7 +210,7 @@ body.wpcom-sidebar-active .wpcom-sidebar-group[data-expanded="true"] .wpcom-side
  * Item-level signal (numeric badge, inline text, inline icon). These render
  * inline next to the item title inside the <a> link.
  */
-body.wpcom-sidebar-active .wpcom-sidebar-item__badge {
+body.wp-admin-sidebar-active .wp-admin-sidebar-item__badge {
 	display: inline-block;
 	margin-left: 6px;
 	padding: 0 6px;
@@ -226,20 +226,20 @@ body.wpcom-sidebar-active .wpcom-sidebar-item__badge {
 	vertical-align: middle;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-item__inline-text {
+body.wp-admin-sidebar-active .wp-admin-sidebar-item__inline-text {
 	display: inline-block;
 	margin-left: 6px;
 	padding: 0 4px;
 	font-size: 10px;
 	font-weight: 600;
-	color: var( --wpcom-sidebar-customizer-theme );
+	color: var( --wp-admin-sidebar-customizer-theme );
 	border: 1px solid currentColor;
 	border-radius: 2px;
 	line-height: 14px;
 	text-transform: uppercase;
 }
 
-body.wpcom-sidebar-active .wpcom-sidebar-item__inline-icon {
+body.wp-admin-sidebar-active .wp-admin-sidebar-item__inline-icon {
 	margin-left: 6px;
 	font-size: 14px;
 	vertical-align: middle;
@@ -248,19 +248,19 @@ body.wpcom-sidebar-active .wpcom-sidebar-item__inline-icon {
 
 /*
  * Flash mitigation. When the user has a saved layout for this site, the
- * bootstrap adds `wpcom-sidebar-pending-delta` to <body>. We hide the entire
+ * bootstrap adds `wp-admin-sidebar-pending-delta` to <body>. We hide the entire
  * sidebar until the JS finishes wrapping + applying the delta and sets
- * `data-wpcom-sidebar-ready="1"`. Without this, items render in their core
+ * `data-wp-admin-sidebar-ready="1"`. Without this, items render in their core
  * positions for one paint cycle and then jump into the saved positions —
  * disorienting on every page load.
  *
  * Without a saved delta the body class isn't present, so this rule is inert
  * and the sidebar paints normally during wrap.
  */
-body.wpcom-sidebar-pending-delta #adminmenu:not([data-wpcom-sidebar-ready="1"]) {
+body.wp-admin-sidebar-pending-delta #adminmenu:not([data-wp-admin-sidebar-ready="1"]) {
 	visibility: hidden;
 }
 
-body.wpcom-sidebar-pending-delta #adminmenu[data-wpcom-sidebar-ready="1"] {
+body.wp-admin-sidebar-pending-delta #adminmenu[data-wp-admin-sidebar-ready="1"] {
 	visibility: visible;
 }

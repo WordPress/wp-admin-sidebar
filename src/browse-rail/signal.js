@@ -23,15 +23,15 @@
  *
  * Contract reference: plan 03-contracts.md § 5.
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
-const CLASS_GROUP_SIGNAL = 'wpcom-sidebar-group__signal';
-const CLASS_ITEM_BADGE   = 'wpcom-sidebar-item__badge';
-const CLASS_ITEM_INLINE_TEXT = 'wpcom-sidebar-item__inline-text';
-const CLASS_ITEM_INLINE_ICON = 'wpcom-sidebar-item__inline-icon';
+const CLASS_GROUP_SIGNAL = 'wp-admin-sidebar-group__signal';
+const CLASS_ITEM_BADGE   = 'wp-admin-sidebar-item__badge';
+const CLASS_ITEM_INLINE_TEXT = 'wp-admin-sidebar-item__inline-text';
+const CLASS_ITEM_INLINE_ICON = 'wp-admin-sidebar-item__inline-icon';
 
-const SELECTOR_GROUP_TOGGLE = '.wpcom-sidebar-group__toggle';
+const SELECTOR_GROUP_TOGGLE = '.wp-admin-sidebar-group__toggle';
 
 /**
  * Render group-level + item-level signal into the wrapped DOM.
@@ -53,13 +53,13 @@ export function renderSignals( sidebar, navModel ) {
 
 /**
  * Render the group attention dot and count inside the group toggle button's
- * `.wpcom-sidebar-group__signal` span.
+ * `.wp-admin-sidebar-group__signal` span.
  *
  * @param {HTMLUListElement} sidebar
  * @param {Object} group
  */
 function renderGroupSignal( sidebar, group ) {
-	const container = sidebar.querySelector( `.wpcom-sidebar-group[data-group="${ cssEscape( group.id ) }"]` );
+	const container = sidebar.querySelector( `.wp-admin-sidebar-group[data-group="${ cssEscape( group.id ) }"]` );
 	if ( ! container ) {
 		return;
 	}
@@ -97,7 +97,7 @@ function renderGroupSignal( sidebar, group ) {
  * @param {Object} item
  */
 function renderItemSignal( sidebar, item ) {
-	const li = sidebar.querySelector( `[data-wpcom-item-id="${ cssEscape( item.itemId ) }"]` );
+	const li = sidebar.querySelector( `[data-wp-admin-sidebar-item-id="${ cssEscape( item.itemId ) }"]` );
 	if ( ! ( li instanceof HTMLElement ) ) {
 		return;
 	}
@@ -108,9 +108,9 @@ function renderItemSignal( sidebar, item ) {
 	// Strip core-emitted signal spans before painting our own. The signal
 	// data was extracted into the nav model in PHP (Sidebar_Signals); leaving
 	// core's markup in place would double-paint the badge / count next to
-	// our wpcom-styled span on items that ship with one of these patterns
-	// (WooCommerce pending counts, plugin-update counters, comment-moderation
-	// counts). Selectors match what extract_raw() reads from.
+	// our own span on items that ship with one of these patterns (WooCommerce
+	// pending counts, plugin-update counters, comment-moderation counts).
+	// Selectors match what extract_raw() reads from.
 	link.querySelectorAll( '.awaiting-mod, .update-plugins, .menu-counter' ).forEach( ( el ) => el.remove() );
 	const sig = item.signal || {};
 

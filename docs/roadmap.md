@@ -9,7 +9,7 @@ A milestone-by-milestone view of where the plugin is going. Updated as we ship.
 **Status: in flight.** What this milestone delivers:
 
 - This repo, public from day 1, GPL-2.0+, GitHub Issues + Discussions enabled.
-- The portable plugin source (`/src/`) — verbatim copy from the wpcom incubation. Plain ES modules, plain PHP, no build step, no React.
+- The portable plugin source (`/src/`) — verbatim copy from where the code was incubated as a WordPress.com mu-plugin. Plain ES modules, plain PHP, no build step, no React.
 - Bootstrap `wp-admin-sidebar.php`: plugin header, four constants, mid-deploy file_exists guards, hooks, default storage binding, opt-in admin-bar toggle.
 - Documented filter API + host-extension guide ([`docs/host-extension-api.md`](host-extension-api.md)).
 - Repo metadata: README, CONTRIBUTING, SECURITY, MAINTAINERS, LICENSE.
@@ -20,11 +20,11 @@ A milestone-by-milestone view of where the plugin is going. Updated as we ship.
 
 ## v0.2.x — vendor cutover + public launch
 
-The WordPress.com (and Automattic-internal) version of this plugin migrates from the in-tree wpcom mu-plugin to consuming this published release wholesale, via an in-tree-copy synced from a tagged release. Concurrently, we announce publicly.
+The WordPress.com version of this plugin migrates from its in-tree mu-plugin form to consuming this published release wholesale, via an in-tree-copy synced from a tagged release. Concurrently, we announce publicly.
 
 **Deliverables:**
 
-- WordPress.com integration mu-plugin lands in the wpcom monorepo: a small (~500 LOC) adapter that hooks `wp_admin_sidebar_storage`, `wp_admin_sidebar_enabled`, `wp_admin_sidebar_layout_rest_url`, and the `wp_admin_sidebar_layout_saved` action. The wpcom mu-plugin's existing `/src/core/` content is removed at the same cutover; wpcom now consumes our public release as in-tree-copy.
+- WordPress.com integration mu-plugin: a small (~500 LOC) adapter that hooks `wp_admin_sidebar_storage`, `wp_admin_sidebar_enabled`, `wp_admin_sidebar_layout_rest_url`, and the `wp_admin_sidebar_layout_saved` action. The previous in-tree-mu-plugin content is removed at the same cutover; the host now consumes this public release as in-tree-copy.
 - Make/Core post: announce the plugin, link to the Playground demo, ask for feedback. Cross-link to Joen's, Kelly's, James's prototypes — frame as complementary rather than competing.
 - Reddit `/r/WordPress` launch post: same spirit, audience-tailored to site owners and small agencies.
 - Stable host-adapter API in `docs/host-extension-api.md` v2 (we document any breaking changes from v0.1 here, but expect none — the API is already what we want).

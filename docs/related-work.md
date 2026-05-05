@@ -53,7 +53,7 @@ Compared to the prior-art designs, this plugin's posture is:
 ## Other reference implementations and ecosystem
 
 - **WordPress Desktop Mode** — [`github.com/WordPress/desktop-mode`](https://github.com/WordPress/desktop-mode). The shape we modeled this plugin's contribution model on. Same posture: opt-in per user, doesn't change Core, fully reverts on deactivation, lives under the WordPress GitHub org.
-- **WordPress.com sidebar redesign rollout** — the WordPress.com team is shipping this same code as a managed-WordPress experience. The WordPress.com integration mu-plugin (`wpcom-admin-sidebar-integration`) consumes this plugin's filter API to add WordPress.com's sticker-based gating, user-attribute-backed storage, and Atomic-cache-flush behaviour. Other managed-WordPress hosts can follow the same pattern.
+- **WordPress.com sidebar redesign rollout** — the WordPress.com team is shipping this same code as a managed-WordPress experience. The WordPress.com integration mu-plugin (`wp-admin-sidebar-integration`) consumes this plugin's filter API to add WordPress.com's sticker-based gating, user-attribute-backed storage, and Atomic-cache-flush behaviour. Other managed-WordPress hosts can follow the same pattern.
 
 ## Conversation channels
 

@@ -9,7 +9,7 @@
  *   - Empty title without usable slug fallback
  *   - Separator pass-through
  *
- * @package WPCOM_Admin_Sidebar\Tests
+ * @package WP_Admin_Sidebar\Tests
  */
 
 // CLI-only script: WordPress.Security.EscapeOutput is for HTML browser output, not stdout.

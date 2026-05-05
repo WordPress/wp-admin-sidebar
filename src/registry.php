@@ -64,8 +64,10 @@ if ( ! function_exists( 'wp_admin_sidebar_default_registry' ) ) {
 			);
 		}
 
-		// WPCOM-common plugins. Curated subset — the rest fall through to the
-		// classify filter and ultimately the unknown-item default below.
+		// Curated plugin entries. A small seed set of well-known plugins so the
+		// default Plugins group recognises common items out of the box; everything
+		// else falls through to the `wp_admin_sidebar_classify` filter and
+		// ultimately the unknown-item default below.
 		$plugins = array(
 			array(
 				'item_id'   => 'plugin:woocommerce/woocommerce.php:-:woocommerce',
@@ -123,13 +125,13 @@ if ( ! function_exists( 'wp_admin_sidebar_unknown_default' ) ) {
 	 * @return array ClassificationEntry shape. See plan 03-contracts.md § 1.
 	 */
 	function wp_admin_sidebar_unknown_default( string $item_id, string $menu_slug, string $title ): array {
-		// URL-shaped menu slugs (e.g., add_menu_page() with a Calypso link as
-		// the slug — `https://wordpress.com/home/<site>`) are emitted by WPCOM's
-		// own admin-shell wiring. They are conceptually "site-level" links, not
-		// "plugin items," so the default classification keeps them at top-level
-		// in their original $menu position. They stay reassignable so a user
-		// can drag them into a group manually if they want, but they don't
-		// land in `plugins` by default.
+		// URL-shaped menu slugs (e.g., a managed host's admin shell injects
+		// `add_menu_page()` entries whose slug is an external link such as
+		// `https://wordpress.com/home/<site>`) are conceptually "site-level"
+		// links, not "plugin items." The default classification keeps them at
+		// top-level in their original $menu position. They stay reassignable
+		// so a user can drag them into a group manually, but they don't land
+		// in `plugins` by default.
 		$is_url_slug = ( str_starts_with( $menu_slug, 'http://' ) || str_starts_with( $menu_slug, 'https://' ) );
 
 		return array(

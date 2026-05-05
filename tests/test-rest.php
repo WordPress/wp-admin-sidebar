@@ -8,7 +8,7 @@
  * Pure unit tests on the validator itself. Full GET/POST round-trip lives in
  * the JN smoke test (real REST runtime needed for register_rest_route / nonces).
  *
- * @package WPCOM_Admin_Sidebar\Tests
+ * @package WP_Admin_Sidebar\Tests
  */
 
 // CLI-only test script with WP shims defined inline; rules below target production HTML output

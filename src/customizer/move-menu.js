@@ -10,9 +10,9 @@
  * and plan 03-contracts.md § 6 (Allowed destinations).
  */
 
-const TRIGGER_CLASS = 'wpcom-sidebar-item__more';
-const MENU_CLASS = 'wpcom-sidebar-move-menu';
-const ITEM_CLASS = 'wpcom-sidebar-move-menu__item';
+const TRIGGER_CLASS = 'wp-admin-sidebar-item__more';
+const MENU_CLASS = 'wp-admin-sidebar-move-menu';
+const ITEM_CLASS = 'wp-admin-sidebar-move-menu__item';
 
 let openMenu = null; // { menuEl, trigger }
 
@@ -25,7 +25,7 @@ let openMenu = null; // { menuEl, trigger }
  * @returns {Function} detach
  */
 export function attachMoveMenu( sidebar, navModel, controller ) {
-	const reassignable = sidebar.querySelectorAll( 'li.wpcom-sidebar-item--reassignable' );
+	const reassignable = sidebar.querySelectorAll( 'li.wp-admin-sidebar-item--reassignable' );
 	for ( const li of reassignable ) {
 		injectTrigger( li );
 	}
@@ -40,7 +40,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		}
 		ev.preventDefault();
 		ev.stopPropagation();
-		const li = trigger.closest( 'li.wpcom-sidebar-item--reassignable' );
+		const li = trigger.closest( 'li.wp-admin-sidebar-item--reassignable' );
 		if ( ! li ) {
 			return;
 		}
@@ -62,7 +62,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 	}
 
 	function openFor( li, trigger ) {
-		const itemId = li.getAttribute( 'data-wpcom-item-id' );
+		const itemId = li.getAttribute( 'data-wp-admin-sidebar-item-id' );
 		if ( ! itemId ) return;
 		const menu = document.createElement( 'ul' );
 		menu.className = MENU_CLASS;
@@ -70,7 +70,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 
 		const groupIds = ( navModel.groups || [] ).map( ( g ) => g.id );
 		const currentContainer = li.parentElement;
-		const inGroup = currentContainer ? currentContainer.closest( 'li.wpcom-sidebar-group' ) : null;
+		const inGroup = currentContainer ? currentContainer.closest( 'li.wp-admin-sidebar-group' ) : null;
 		const currentGroupId = inGroup ? inGroup.getAttribute( 'data-group' ) : null;
 
 		const choices = [];
@@ -163,9 +163,9 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 				return;
 			}
 			const target = rows[ targetIdx ];
-			if ( target.classList.contains( 'wpcom-sidebar-group' ) ) {
+			if ( target.classList.contains( 'wp-admin-sidebar-group' ) ) {
 				if ( direction > 0 ) {
-					const childrenUl = target.querySelector( ':scope > .wpcom-sidebar-group__children' );
+					const childrenUl = target.querySelector( ':scope > .wp-admin-sidebar-group__children' );
 					if ( ! childrenUl ) {
 						closeMenu();
 						return;
@@ -180,7 +180,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 				target.parentElement.insertBefore( li, target );
 			}
 			const newParent = li.parentElement;
-			const newGroupContainer = newParent ? newParent.closest( 'li.wpcom-sidebar-group' ) : null;
+			const newGroupContainer = newParent ? newParent.closest( 'li.wp-admin-sidebar-group' ) : null;
 			const newGroupId = newGroupContainer ? newGroupContainer.getAttribute( 'data-group' ) : null;
 			// Index against ALL <li> siblings, matching applyLayoutDelta's
 			// replay semantics (grouping.js#applyLayoutDelta filters
@@ -211,7 +211,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 			let target;
 			if ( position.kind === 'in_group' ) {
 				const groupContainer = sidebar.querySelector(
-					`li.wpcom-sidebar-group[data-group="${ position.group_id }"] > .wpcom-sidebar-group__children`
+					`li.wp-admin-sidebar-group[data-group="${ position.group_id }"] > .wp-admin-sidebar-group__children`
 				);
 				if ( ! groupContainer ) {
 					closeMenu();
@@ -246,7 +246,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 			let targetContainer;
 			if ( baseline.groupId ) {
 				targetContainer = sidebar.querySelector(
-					`li.wpcom-sidebar-group[data-group="${ baseline.groupId }"] > .wpcom-sidebar-group__children`
+					`li.wp-admin-sidebar-group[data-group="${ baseline.groupId }"] > .wp-admin-sidebar-group__children`
 				);
 			} else {
 				targetContainer = sidebar;
@@ -256,7 +256,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 				return;
 			}
 			const reassignableSiblings = Array.from( targetContainer.children ).filter(
-				( el ) => el.tagName === 'LI' && el.classList.contains( 'wpcom-sidebar-item--reassignable' )
+				( el ) => el.tagName === 'LI' && el.classList.contains( 'wp-admin-sidebar-item--reassignable' )
 			);
 			const insertBeforeNode = reassignableSiblings[ baseline.index ] || null;
 			targetContainer.insertBefore( liEl, insertBeforeNode );
@@ -324,8 +324,8 @@ function collectRows( sidebar ) {
 	for ( const child of sidebar.children ) {
 		if ( child.tagName !== 'LI' ) continue;
 		rows.push( child );
-		if ( child.classList.contains( 'wpcom-sidebar-group' ) ) {
-			const childrenUl = child.querySelector( ':scope > .wpcom-sidebar-group__children' );
+		if ( child.classList.contains( 'wp-admin-sidebar-group' ) ) {
+			const childrenUl = child.querySelector( ':scope > .wp-admin-sidebar-group__children' );
 			if ( childrenUl ) {
 				for ( const inner of childrenUl.children ) {
 					if ( inner.tagName === 'LI' ) {

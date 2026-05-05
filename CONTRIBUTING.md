@@ -4,7 +4,7 @@ Thanks for considering a contribution. This project follows the WordPress projec
 
 ## Reporting bugs
 
-Open a [GitHub Issue](https://github.com/Automattic/wp-admin-sidebar/issues) with:
+Open a [GitHub Issue](https://github.com/WordPress/wp-admin-sidebar/issues) with:
 
 - WordPress version, PHP version, browser
 - List of active plugins (or a representative subset that reproduces the issue)
@@ -16,14 +16,14 @@ For **security issues**, see [SECURITY.md](SECURITY.md). Do not open a public is
 
 ## Design feedback / open questions
 
-For UX questions, "should we…?" discussions, demo recordings, or feature ideas without a concrete acceptance criterion, use [GitHub Discussions](https://github.com/Automattic/wp-admin-sidebar/discussions). The **Ideas** and **Q&A** categories are the natural homes for early-stage design conversations.
+For UX questions, "should we…?" discussions, demo recordings, or feature ideas without a concrete acceptance criterion, use [GitHub Discussions](https://github.com/WordPress/wp-admin-sidebar/discussions). The **Ideas** and **Q&A** categories are the natural homes for early-stage design conversations.
 
 ## Code contributions
 
 ### Setup
 
 ```bash
-git clone https://github.com/Automattic/wp-admin-sidebar.git
+git clone https://github.com/WordPress/wp-admin-sidebar.git
 cd wp-admin-sidebar
 npm install         # devDependencies (jest, jsdom)
 composer install    # devDependencies (phpunit, polyfills) — when composer.json is added
@@ -53,7 +53,7 @@ Coding conventions:
 
 - **PHP**: WordPress Coding Standards. PHP 8.0+ syntax features welcome (null-safe, named args, match expressions, typed properties). No PSR-4; we follow the WordPress plugin idiom of plain `require_once` + procedural class names (`Sidebar_Classifier`, `Sidebar_Rest`, etc.).
 - **JS**: plain ES modules (`type="module"` in the page, dynamic import for siblings). No build step, no React, no `@wordpress/*` runtime dependencies. We rely on browser-supported ES2020+ syntax.
-- **CSS**: vanilla CSS, scoped under `body.wpcom-sidebar-active` (and during customizer mode, `body.wpcom-sidebar-mode-customize`). No preprocessors.
+- **CSS**: vanilla CSS, scoped under `body.wp-admin-sidebar-active` (and during customizer mode, `body.wp-admin-sidebar-mode-customize`). No preprocessors.
 - **Comments**: explain WHY, not WHAT. The codebase tries to keep load-bearing decisions documented inline rather than buried in commit messages.
 
 ### Pull requests

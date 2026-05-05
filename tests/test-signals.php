@@ -5,17 +5,17 @@
  * Two layers exercised:
  *
  *   1. extract_raw() — covers each of the four supported markup patterns
- *      (count-N, inline-text, inline-icon, awaiting-mod) the endpoint
- *      parses. The shape and field-presence semantics should match the
- *      endpoint's parse_menu_item() at:
- *      wp-content/mu-plugins/jetpack-plugin/sun/_inc/lib/core-api/wpcom-endpoints/class-wpcom-rest-api-v2-endpoint-admin-menu.php:456-528
+ *      (count-N, inline-text, inline-icon, awaiting-mod) the source endpoint
+ *      parses (the Calypso admin-menu REST endpoint shipped in
+ *      jetpack-mu-wpcom). The shape and field-presence semantics should
+ *      match its parse_menu_item().
  *
  *   2. map_to_nav() — derives snake_case nav-model fields from the camelCase
  *      raw shape, including numeric_badge and attention.
  *
  * Run from this directory: php tests/test-signals.php
  *
- * @package WPCOM_Admin_Sidebar\Tests
+ * @package WP_Admin_Sidebar\Tests
  */
 
 // CLI-only script: WordPress.Security.EscapeOutput is for HTML browser output, not stdout.

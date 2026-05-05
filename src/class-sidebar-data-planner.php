@@ -1,6 +1,6 @@
 <?php
 /**
- * Emits the inline `wpcomAdminSidebarData` script.
+ * Emits the inline `wpAdminSidebarData` script.
  *
  * Hooked at `in_admin_header` priority 2 (after the classifier's priority 1
  * build). The browse-rail JS bundle reads this on DOMContentLoaded and wraps
@@ -11,7 +11,7 @@
  * Contract reference: plan 03-contracts.md § 2 (NavModel), § 3 (LayoutDelta),
  *                     § 9 (Storage).
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,7 +25,7 @@ if ( class_exists( 'Sidebar_Data_Planner' ) ) {
 /**
  * Inline-script emitter. Pulls the cached nav model from the classifier, reads
  * the saved layout delta via the bound storage, and prints both as a single
- * `wpcomAdminSidebarData` global.
+ * `wpAdminSidebarData` global.
  */
 class Sidebar_Data_Planner {
 
@@ -56,14 +56,12 @@ class Sidebar_Data_Planner {
 				// REST consumed by the customizer (A.2).
 				//
 				// `restUrl` is the fully-resolved layout endpoint. The default is
-				// the same-origin /wp-json/ path that resolves to the core
-				// namespace `Sidebar_Rest::register_routes()` registers. Hosts
-				// override via the `wp_admin_sidebar_layout_rest_url` filter
-				// (the WPCOM adapter does this because rest_url() /
-				// home_url('/wp-json/') is not routed on user blogs there;
-				// the WPCOM-merge route lives under
-				// `wpcom/v2/sites/<blog_id>/wp-admin-sidebar/layout` on
-				// public-api.wordpress.com). The default works on plain WP.
+				// the same-origin /wp-json/ path that resolves to the namespace
+				// `Sidebar_Rest::register_routes()` registers. Hosts override via
+				// the `wp_admin_sidebar_layout_rest_url` filter (e.g., a managed
+				// host that routes REST through a centralized public-api
+				// dispatcher rather than the standard /wp-json/ surface). The
+				// default works on plain WP.
 				//
 				// `restRoot` stays for back-compat with consumers that build
 				// their own URL; the customizer prefers `restUrl` when present.
@@ -79,7 +77,7 @@ class Sidebar_Data_Planner {
 		}
 
 		printf(
-			"<script id=\"wpcom-admin-sidebar-data\">window.wpcomAdminSidebarData = %s;</script>\n",
+			"<script id=\"wp-admin-sidebar-data\">window.wpAdminSidebarData = %s;</script>\n",
 			// JSON output is for a JS variable assignment — the JSON encoder has
 			// already escaped per RFC 8259, and we only need to neutralise the
 			// </script close-tag pattern that JSON encoding doesn't catch.
@@ -92,9 +90,9 @@ class Sidebar_Data_Planner {
 	 *
 	 * Default is the same-origin /wp-json/wp-admin-sidebar/v1/layout, which is
 	 * what `Sidebar_Rest::register_routes()` exposes on plain WP installs.
-	 * WPCOM hooks the filter to redirect the customizer at the public-api
-	 * endpoint registered by the WPCOM REST endpoint plugin (see
-	 * `wp-content/rest-api-plugins/endpoints/wp-admin-sidebar.php`).
+	 * Hosts that route REST through a centralized public-api dispatcher
+	 * (instead of the standard /wp-json/ surface) hook the filter to point
+	 * the customizer at their own endpoint URL.
 	 *
 	 * The path is hardcoded rather than referencing `Sidebar_Rest::NAMESPACE` /
 	 * `::ROUTE` to remove the cross-class constant dependency that gherald

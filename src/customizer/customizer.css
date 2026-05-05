@@ -2,7 +2,7 @@
  * Customizer-mode styles.
  *
  * Loaded on demand alongside customizer.js when the user enters customizer
- * mode. Scoped under `body.wpcom-sidebar-mode-customize` so it only applies
+ * mode. Scoped under `body.wp-admin-sidebar-mode-customize` so it only applies
  * during the mode; the body class is toggled on enter / exit.
  *
  * Design tokens come from styles.css (A.1's base styles).
@@ -29,8 +29,8 @@
  * The LI gets a static customizer-mode background (`#2c3439`) so non-hovered
  * rows still read as visually distinct from the rest of the sidebar.
  */
-body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable {
-	background: var( --wpcom-sidebar-customizer-item-bg, #2c3439 );
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable {
+	background: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
 	cursor: grab;
 	position: relative;
 }
@@ -42,32 +42,32 @@ body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable
  * padding on the label) need to be reset so they participate in the flex
  * layout.
  */
-body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a {
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a {
 	display: flex;
 	align-items: center;
 	padding: 0;
 	cursor: grab;
 }
 
-body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a > .wp-menu-image {
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a > .wp-menu-image {
 	flex: 0 0 auto;
 	float: none;
 	width: 36px;
 	height: 34px;
 }
 
-body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a > .wp-menu-name {
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a > .wp-menu-name {
 	flex: 1 1 auto;
 	padding: 0;
 	min-width: 0;
 }
 
-body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable:active,
-body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--reassignable > a:active {
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable:active,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:active {
 	cursor: grabbing;
 }
 
-body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__grip {
+body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__grip {
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
@@ -80,12 +80,12 @@ body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__grip {
 	line-height: 1;
 }
 
-body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__grip:focus-visible {
-	outline: 2px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
+body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__grip:focus-visible {
+	outline: 2px solid var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	outline-offset: -2px;
 }
 
-body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more {
+body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more {
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
@@ -98,15 +98,15 @@ body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more {
 	line-height: 1;
 }
 
-body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more:focus-visible {
-	outline: 2px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
+body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more:focus-visible {
+	outline: 2px solid var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	outline-offset: -2px;
 }
 
 /* Floating ghost element follows the cursor while dragging. The ghost is a
  * shallow clone of the source row so it carries the same grip + dashicon +
  * label as the live row (Figma 3505:75323). */
-.wpcom-sidebar-drag-ghost {
+.wp-admin-sidebar-drag-ghost {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -116,18 +116,18 @@ body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more:focus-visible {
 	align-items: center;
 	min-width: 144px;
 	padding: 0;
-	background: var( --wpcom-sidebar-customizer-item-bg, #2c3439 );
-	color: var( --wpcom-sidebar-item-fg, #f0f0f1 );
-	font-size: var( --wpcom-sidebar-font-size, 14px );
-	font-family: var( --wpcom-sidebar-font, 'SF Pro Text', sans-serif );
+	background: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
+	color: var( --wp-admin-sidebar-item-fg, #f0f0f1 );
+	font-size: var( --wp-admin-sidebar-font-size, 14px );
+	font-family: var( --wp-admin-sidebar-font, 'SF Pro Text', sans-serif );
 	border-radius: 4px;
-	opacity: var( --wpcom-sidebar-drag-ghost-opacity, 0.95 );
+	opacity: var( --wp-admin-sidebar-drag-ghost-opacity, 0.95 );
 	box-shadow: 0 4px 12px rgba( 0, 0, 0, 0.4 );
 }
 
 /* Inside the ghost, suppress the cloned link's interactive styling and tighten
  * the layout so the grip + icon + label render as a single clean row. */
-.wpcom-sidebar-drag-ghost > a {
+.wp-admin-sidebar-drag-ghost > a {
 	flex: 1 1 auto;
 	display: inline-flex;
 	align-items: center;
@@ -139,7 +139,7 @@ body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more:focus-visible {
 	pointer-events: none;
 }
 
-.wpcom-sidebar-drag-ghost .wp-menu-image {
+.wp-admin-sidebar-drag-ghost .wp-menu-image {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -148,7 +148,7 @@ body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more:focus-visible {
 	flex: 0 0 auto;
 }
 
-.wpcom-sidebar-drag-ghost .wpcom-sidebar-item__grip {
+.wp-admin-sidebar-drag-ghost .wp-admin-sidebar-item__grip {
 	flex: 0 0 auto;
 	width: 20px;
 	height: 20px;
@@ -159,18 +159,18 @@ body.wpcom-sidebar-mode-customize .wpcom-sidebar-item__more:focus-visible {
 }
 
 /* The source row fades while it follows the cursor. */
-body.wpcom-sidebar-mode-customize #adminmenu li.wpcom-sidebar-item--dragging {
-	opacity: var( --wpcom-sidebar-drag-source-opacity, 0.3 );
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--dragging {
+	opacity: var( --wp-admin-sidebar-drag-source-opacity, 0.3 );
 }
 
 /* Drop indicator line drawn between rows. */
-li.wpcom-sidebar-drop-indicator {
+li.wp-admin-sidebar-drop-indicator {
 	list-style: none;
 	margin: 0 0 0 16px;
 	padding: 0;
-	height: var( --wpcom-sidebar-drop-indicator-height, 2px );
-	width: var( --wpcom-sidebar-drop-indicator-width, 112px );
-	background: var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	height: var( --wp-admin-sidebar-drop-indicator-height, 2px );
+	width: var( --wp-admin-sidebar-drop-indicator-width, 112px );
+	background: var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	pointer-events: none;
 }
 
@@ -189,7 +189,7 @@ li.wpcom-sidebar-drop-indicator {
  * Phase A is scoped to expanded sidebar; mobile / folded states defer to
  * wp-admin defaults until the collapsed-state design lands.
  */
-body.wpcom-sidebar-mode-customize #adminmenuwrap {
+body.wp-admin-sidebar-mode-customize #adminmenuwrap {
 	top: var( --wp-admin--admin-bar--height, 32px );
 	bottom: 0;
 	height: auto;
@@ -197,7 +197,7 @@ body.wpcom-sidebar-mode-customize #adminmenuwrap {
 	flex-direction: column;
 }
 
-body.wpcom-sidebar-mode-customize #adminmenu {
+body.wp-admin-sidebar-mode-customize #adminmenu {
 	flex: 1 1 auto;
 	/* min-height: 0 lets the flex item shrink below content height so
 	 * overflow-y: auto can take effect — without it, the natural content
@@ -219,7 +219,7 @@ body.wpcom-sidebar-mode-customize #adminmenu {
 	-ms-overflow-style: none;         /* legacy IE/Edge */
 }
 
-body.wpcom-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
+body.wp-admin-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 	width: 0;
 	height: 0;
 }
@@ -233,7 +233,7 @@ body.wpcom-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
  * hinting that there's more above the fold. Always present even when
  * content fits — adds a subtle visual separation from the footer that
  * doesn't depend on JS scroll-tracking. */
-.wpcom-sidebar-customize-footer {
+.wp-admin-sidebar-customize-footer {
 	flex: 0 0 auto;
 	display: flex;
 	/* Stacked, not side-by-side, per the Figma prototype. DOM order
@@ -245,78 +245,78 @@ body.wpcom-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 	flex-direction: column;
 	gap: 6px;
 	padding: 8px 12px;
-	background: var( --wpcom-sidebar-bg, #1d2327 );
+	background: var( --wp-admin-sidebar-bg, #1d2327 );
 	border-top: 1px solid rgba( 240, 240, 241, 0.1 );
 	box-shadow: 0 -8px 12px -8px rgba( 0, 0, 0, 0.5 );
 }
 
-.wpcom-sidebar-customize-footer__cancel,
-.wpcom-sidebar-customize-footer__save {
+.wp-admin-sidebar-customize-footer__cancel,
+.wp-admin-sidebar-customize-footer__save {
 	/* No flex: 1 in column mode — buttons take their natural height
 	 * and stretch to the wrap's width via align-items (default
 	 * `stretch` on the flex parent). */
 	flex: 0 0 auto;
 	padding: 6px 12px;
 	border-radius: 3px;
-	font-size: var( --wpcom-sidebar-button-font-size, 13px );
-	font-family: var( --wpcom-sidebar-font, 'SF Pro Text', sans-serif );
+	font-size: var( --wp-admin-sidebar-button-font-size, 13px );
+	font-family: var( --wp-admin-sidebar-font, 'SF Pro Text', sans-serif );
 	cursor: pointer;
 }
 
-.wpcom-sidebar-customize-footer__cancel {
+.wp-admin-sidebar-customize-footer__cancel {
 	background: transparent;
-	border: 1px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
-	color: var( --wpcom-sidebar-customizer-theme, #3858e9 );
+	border: 1px solid var( --wp-admin-sidebar-customizer-theme, #3858e9 );
+	color: var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 }
 
-.wpcom-sidebar-customize-footer__save {
-	background: var( --wpcom-sidebar-customizer-theme, #3858e9 );
-	border: 1px solid var( --wpcom-sidebar-customizer-theme, #3858e9 );
+.wp-admin-sidebar-customize-footer__save {
+	background: var( --wp-admin-sidebar-customizer-theme, #3858e9 );
+	border: 1px solid var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	color: #fff;
 }
 
-.wpcom-sidebar-customize-footer__save[disabled] {
+.wp-admin-sidebar-customize-footer__save[disabled] {
 	opacity: 0.55;
 	cursor: not-allowed;
 }
 
 /* Hide the collapse-menu link during customizer mode (replaced by the footer). */
-body.wpcom-sidebar-mode-customize #collapse-menu {
+body.wp-admin-sidebar-mode-customize #collapse-menu {
 	display: none;
 }
 
 /* Move-to menu popup. Positioned with inline styles by JS. */
-.wpcom-sidebar-move-menu {
+.wp-admin-sidebar-move-menu {
 	z-index: 100001;
 	margin: 0;
 	padding: 4px 0;
 	list-style: none;
-	background: var( --wpcom-sidebar-bg, #1d2327 );
+	background: var( --wp-admin-sidebar-bg, #1d2327 );
 	border: 1px solid rgba( 240, 240, 241, 0.15 );
 	border-radius: 4px;
 	min-width: 180px;
 	box-shadow: 0 6px 20px rgba( 0, 0, 0, 0.4 );
 }
 
-.wpcom-sidebar-move-menu li {
+.wp-admin-sidebar-move-menu li {
 	margin: 0;
 	padding: 0;
 }
 
-.wpcom-sidebar-move-menu__item {
+.wp-admin-sidebar-move-menu__item {
 	display: block;
 	width: 100%;
 	padding: 6px 12px;
 	border: 0;
 	background: transparent;
-	color: var( --wpcom-sidebar-item-fg, #f0f0f1 );
+	color: var( --wp-admin-sidebar-item-fg, #f0f0f1 );
 	text-align: left;
-	font-size: var( --wpcom-sidebar-font-size, 14px );
+	font-size: var( --wp-admin-sidebar-font-size, 14px );
 	cursor: pointer;
 }
 
-.wpcom-sidebar-move-menu__item:hover,
-.wpcom-sidebar-move-menu__item:focus-visible {
-	background: var( --wpcom-sidebar-customizer-item-bg, #2c3439 );
+.wp-admin-sidebar-move-menu__item:hover,
+.wp-admin-sidebar-move-menu__item:focus-visible {
+	background: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
 	outline: none;
 }

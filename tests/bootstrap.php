@@ -1,6 +1,6 @@
 <?php
 /**
- * Minimal test bootstrap for the wpcom-admin-sidebar mu-plugin.
+ * Minimal test bootstrap for the wp-admin-sidebar mu-plugin.
  *
  * Defines the WordPress shims the pure-function classes need (sanitize_title,
  * wp_strip_all_tags) so the unit tests run without booting all of WordPress.
@@ -9,7 +9,7 @@
  * $submenu, run against a real WP install (sandbox) where all helpers are
  * available natively.
  *
- * @package WPCOM_Admin_Sidebar\Tests
+ * @package WP_Admin_Sidebar\Tests
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

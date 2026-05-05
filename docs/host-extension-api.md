@@ -25,7 +25,7 @@ add_filter( 'wp_admin_sidebar_enabled', function ( $enabled, $user_id ) {
     if ( ! function_exists( 'has_blog_sticker' ) ) {
         return $enabled;
     }
-    if ( ! has_blog_sticker( 'wpcom-admin-sidebar-redesign', get_current_blog_id() ) ) {
+    if ( ! has_blog_sticker( 'wp-admin-sidebar-redesign', get_current_blog_id() ) ) {
         return false;
     }
     // Sticker is on. Pass through to the user-meta-driven default.

@@ -1,7 +1,7 @@
 /**
  * Browse-rail entry point.
  *
- * Reads the inline `wpcomAdminSidebarData` payload emitted by the data planner,
+ * Reads the inline `wpAdminSidebarData` payload emitted by the data planner,
  * wraps core's flat `<li>` items into group `<ul>` containers, attaches expand /
  * collapse state, renders signal data on group headers and item badges. All on
  * `DOMContentLoaded`.
@@ -10,7 +10,7 @@
  *
  * Contract reference: plan 03-contracts.md § 2 (NavModel) and § 8 (group render shell).
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 // Sub-modules are loaded dynamically so the entry-script cache-bust query
@@ -44,7 +44,7 @@
  * @property {Object} meta
  */
 
-const DATA_GLOBAL = 'wpcomAdminSidebarData';
+const DATA_GLOBAL = 'wpAdminSidebarData';
 const SIDEBAR_SELECTOR = '#adminmenu';
 
 /**
@@ -108,7 +108,7 @@ export async function bootstrap() {
 	if ( ! sidebar ) {
 		return;
 	}
-	if ( sidebar.dataset.wpcomSidebarReady === '1' ) {
+	if ( sidebar.dataset.wpAdminSidebarReady === '1' ) {
 		return;
 	}
 
@@ -127,7 +127,7 @@ export async function bootstrap() {
 	grouping.wrapIntoGroups( sidebar, navModel, layoutDelta );
 
 	// Phase 1.5: apply the saved layout delta on top of the wrapped sidebar.
-	// Reassignable items already carry data-wpcom-item-id from the wrap pass,
+	// Reassignable items already carry data-wp-admin-sidebar-item-id from the wrap pass,
 	// so we can resolve each override to a real <li> and reposition it.
 	// Stale overrides (itemId not in DOM) skip silently — see the function's
 	// docblock for the stale-item-preservation contract.
@@ -145,8 +145,8 @@ export async function bootstrap() {
 		siteId: meta && typeof meta.siteId === 'number' ? meta.siteId : 0,
 	} );
 
-	sidebar.dataset.wpcomSidebarReady = '1';
-	document.body.classList.add( 'wpcom-sidebar-active' );
+	sidebar.dataset.wpAdminSidebarReady = '1';
+	document.body.classList.add( 'wp-admin-sidebar-active' );
 
 	// Phase 4: customizer entry. Each group's customize button dynamically
 	// loads the customizer chunk on first click; the customizer module owns
@@ -160,7 +160,7 @@ export async function bootstrap() {
  * once and cached in module memory for subsequent enters.
  */
 function wireCustomizeButtons( sidebar, navModel, layoutDelta, meta, bust ) {
-	const buttons = sidebar.querySelectorAll( '.wpcom-sidebar-group__customize' );
+	const buttons = sidebar.querySelectorAll( '.wp-admin-sidebar-group__customize' );
 	if ( ! buttons.length ) {
 		return;
 	}
@@ -208,14 +208,14 @@ function wireCustomizeButtons( sidebar, navModel, layoutDelta, meta, bust ) {
 			// Read layoutDelta FRESH on each click. The closure-captured
 			// `layoutDelta` from wireCustomizeButtons() is the page-load
 			// snapshot; on Save, the customizer publishes the saved delta
-			// back to `window.wpcomAdminSidebarData.layoutDelta`, so a
+			// back to `window.wpAdminSidebarData.layoutDelta`, so a
 			// same-page Customize → Save → Customize sequence sees the
 			// latest state without a reload. Falls back to the captured
 			// value on environments without the data global (defensive).
 			const liveDelta =
 				( typeof window !== 'undefined' &&
-					window.wpcomAdminSidebarData &&
-					window.wpcomAdminSidebarData.layoutDelta ) ||
+					window.wpAdminSidebarData &&
+					window.wpAdminSidebarData.layoutDelta ) ||
 				layoutDelta;
 			await mod.enterCustomizer( sidebar, navModel, liveDelta, {
 				restRoot,

@@ -1,7 +1,7 @@
 /**
  * Grouping algorithm.
  *
- * Wraps core's flat `<li>` items into `<ul class="wpcom-sidebar-group__children">`
+ * Wraps core's flat `<li>` items into `<ul class="wp-admin-sidebar-group__children">`
  * containers, one per group present in the nav model. Items not classified
  * (default_group: null) and post-`adminmenu` notice items stay as top-level
  * siblings of the new group containers.
@@ -11,20 +11,20 @@
  * customize button only renders for the `plugins` group; the toggle button
  * carries the label, the signal, and the chevron.
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
-const CLASS_GROUP        = 'wpcom-sidebar-group';
-const CLASS_GROUP_HEADER = 'wpcom-sidebar-group__header';
-const CLASS_GROUP_TOGGLE = 'wpcom-sidebar-group__toggle';
-const CLASS_GROUP_LABEL  = 'wpcom-sidebar-group__label';
-const CLASS_GROUP_SIGNAL = 'wpcom-sidebar-group__signal';
-const CLASS_GROUP_CHEVRON = 'wpcom-sidebar-group__chevron';
-const CLASS_GROUP_CHILDREN = 'wpcom-sidebar-group__children';
-const CLASS_GROUP_CUSTOMIZE = 'wpcom-sidebar-group__customize';
+const CLASS_GROUP        = 'wp-admin-sidebar-group';
+const CLASS_GROUP_HEADER = 'wp-admin-sidebar-group__header';
+const CLASS_GROUP_TOGGLE = 'wp-admin-sidebar-group__toggle';
+const CLASS_GROUP_LABEL  = 'wp-admin-sidebar-group__label';
+const CLASS_GROUP_SIGNAL = 'wp-admin-sidebar-group__signal';
+const CLASS_GROUP_CHEVRON = 'wp-admin-sidebar-group__chevron';
+const CLASS_GROUP_CHILDREN = 'wp-admin-sidebar-group__children';
+const CLASS_GROUP_CUSTOMIZE = 'wp-admin-sidebar-group__customize';
 
-const ATTR_ITEM_ID    = 'data-wpcom-item-id';
-const ATTR_MENU_SLUG  = 'data-wpcom-menu-slug';
+const ATTR_ITEM_ID    = 'data-wp-admin-sidebar-item-id';
+const ATTR_MENU_SLUG  = 'data-wp-admin-sidebar-menu-slug';
 
 /**
  * Map menuSlug → DOM `<li>` element. Each `<li>` is indexed under every slug
@@ -214,7 +214,7 @@ function buildGroupContainer( group, customizable ) {
 	const header = document.createElement( 'div' );
 	header.classList.add( CLASS_GROUP_HEADER );
 
-	const childrenId = `wpcom-sidebar-group-${ group.id }`;
+	const childrenId = `wp-admin-sidebar-group-${ group.id }`;
 
 	const toggle = document.createElement( 'button' );
 	toggle.type = 'button';
@@ -334,7 +334,7 @@ export function wrapIntoGroups( sidebar, navModel, _layoutDelta ) {
  * returns.
  *
  * Must run after `wrapIntoGroups` so reassignable items already carry
- * `data-wpcom-item-id` and group containers exist for `in_group` targets.
+ * `data-wp-admin-sidebar-item-id` and group containers exist for `in_group` targets.
  *
  * Multi-override collisions are handled in delta-list order: later overrides
  * displace earlier siblings in the same container, which matches the contract
@@ -399,9 +399,9 @@ export function applyLayoutDelta( sidebar, layoutDelta ) {
  * meta (the WC Payments-style id, for example).
  */
 function findItemById( sidebar, itemId ) {
-	const items = sidebar.querySelectorAll( 'li[data-wpcom-item-id]' );
+	const items = sidebar.querySelectorAll( 'li[data-wp-admin-sidebar-item-id]' );
 	for ( const li of items ) {
-		if ( li.getAttribute( 'data-wpcom-item-id' ) === itemId ) {
+		if ( li.getAttribute( 'data-wp-admin-sidebar-item-id' ) === itemId ) {
 			return li;
 		}
 	}
@@ -420,10 +420,10 @@ function resolveTargetContainer( sidebar, position ) {
 		if ( ! groupId || typeof groupId !== 'string' ) {
 			return null;
 		}
-		const groups = sidebar.querySelectorAll( '.wpcom-sidebar-group' );
+		const groups = sidebar.querySelectorAll( '.wp-admin-sidebar-group' );
 		for ( const group of groups ) {
 			if ( group.getAttribute( 'data-group' ) === groupId ) {
-				return group.querySelector( ':scope > .wpcom-sidebar-group__children' );
+				return group.querySelector( ':scope > .wp-admin-sidebar-group__children' );
 			}
 		}
 		return null;

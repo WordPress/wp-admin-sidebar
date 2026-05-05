@@ -7,7 +7,7 @@
  * and renders Cancel / Save controls. On save POSTs the working delta and
  * exits; on cancel discards and exits.
  *
- * The body class `wpcom-sidebar-mode-customize` is the CSS scope for
+ * The body class `wp-admin-sidebar-mode-customize` is the CSS scope for
  * customizer-only styling; the entry / exit dance toggles it on `<body>`.
  *
  * Contract reference: plan 03-contracts.md § 4 (REST surface), § 7 (draft
@@ -20,11 +20,11 @@
 // hit during A.1 dev iterations. See plan jn-setup.md "Dev-iteration
 // cache-bust patterns".
 
-const BODY_MODE_CLASS = 'wpcom-sidebar-mode-customize';
-const REASSIGNABLE_CLASS = 'wpcom-sidebar-item--reassignable';
-const GRIP_CLASS = 'wpcom-sidebar-item__grip';
-const FOOTER_CLASS = 'wpcom-sidebar-customize-footer';
-const ANNOUNCE_ID = 'wpcom-sidebar-customize-live';
+const BODY_MODE_CLASS = 'wp-admin-sidebar-mode-customize';
+const REASSIGNABLE_CLASS = 'wp-admin-sidebar-item--reassignable';
+const GRIP_CLASS = 'wp-admin-sidebar-item__grip';
+const FOOTER_CLASS = 'wp-admin-sidebar-customize-footer';
+const ANNOUNCE_ID = 'wp-admin-sidebar-customize-live';
 
 let active = null; // { state, detachFns, footerEl, liveEl, beforeunloadHandler }
 
@@ -50,9 +50,10 @@ function resolveBust() {
  * @param {Object|null} savedDelta  Saved layout delta from the inline payload.
  * @param {Object} options          { restRoot, restUrl, nonce, onExit }
  *   - `restUrl` is the fully-resolved layout endpoint (preferred); save()
- *     uses it directly. WPCOM points it at the public-api endpoint;
- *     plain WP / Phase B leaves it pointing at the same-origin /wp-json/
- *     route. Newer inline payloads always emit it.
+ *     uses it directly. Hosts that route REST through a centralized
+ *     public-api dispatcher set this to their own endpoint; plain WP
+ *     leaves it pointing at the same-origin /wp-json/ route. Newer inline
+ *     payloads always emit it.
  *   - `restRoot` is the legacy fallback for inline payloads that didn't
  *     include `restUrl`. Save concatenates the core route on it.
  *   - `nonce` is the wp_rest cookie nonce for the POST.
@@ -235,9 +236,9 @@ function decorateReassignableItems( sidebar, navModel ) {
 		}
 	}
 
-	const lis = sidebar.querySelectorAll( 'li[data-wpcom-item-id]' );
+	const lis = sidebar.querySelectorAll( 'li[data-wp-admin-sidebar-item-id]' );
 	for ( const li of lis ) {
-		const itemId = li.getAttribute( 'data-wpcom-item-id' );
+		const itemId = li.getAttribute( 'data-wp-admin-sidebar-item-id' );
 		if ( ! reassignableIds.has( itemId ) ) {
 			continue;
 		}
@@ -286,7 +287,7 @@ function suppressReassignableLinkClicks( sidebar ) {
 		if ( ! target ) {
 			return;
 		}
-		const li = target.closest( 'li.wpcom-sidebar-item--reassignable' );
+		const li = target.closest( 'li.wp-admin-sidebar-item--reassignable' );
 		if ( ! li ) {
 			return;
 		}
@@ -321,13 +322,13 @@ function suppressReassignableLinkClicks( sidebar ) {
 function expandGroupsForCustomizing( sidebar ) {
 	/** @type {Array<{toggle: HTMLElement, prevExpanded: string|null}>} */
 	const restorers = [];
-	const groups = sidebar.querySelectorAll( 'li.wpcom-sidebar-group' );
+	const groups = sidebar.querySelectorAll( 'li.wp-admin-sidebar-group' );
 	for ( const group of groups ) {
-		const hasReassignable = group.querySelector( 'li.wpcom-sidebar-item--reassignable' );
+		const hasReassignable = group.querySelector( 'li.wp-admin-sidebar-item--reassignable' );
 		if ( ! hasReassignable ) {
 			continue;
 		}
-		const toggle = group.querySelector( ':scope > .wpcom-sidebar-group__header > .wpcom-sidebar-group__toggle' );
+		const toggle = group.querySelector( ':scope > .wp-admin-sidebar-group__header > .wp-admin-sidebar-group__toggle' );
 		if ( ! toggle ) {
 			continue;
 		}
@@ -339,7 +340,7 @@ function expandGroupsForCustomizing( sidebar ) {
 	}
 	return function restore() {
 		for ( const { toggle, prevExpanded } of restorers ) {
-			const group = toggle.closest( 'li.wpcom-sidebar-group' );
+			const group = toggle.closest( 'li.wp-admin-sidebar-group' );
 			if ( ! group ) continue;
 			const nowExpanded = group.getAttribute( 'data-expanded' ) === 'true';
 			const wasExpanded = prevExpanded === 'true';
@@ -407,7 +408,7 @@ function updateFooter() {
  * Capture the DOM order of every reassignable LI before customizer mode
  * mutates anything. Returns an array of {li, parent, nextSibling}; pass it
  * to restoreLayoutSnapshot() on Cancel-after-dirty to put rows back where
- * the user found them. Captures only items with `data-wpcom-item-id`
+ * the user found them. Captures only items with `data-wp-admin-sidebar-item-id`
  * (the reassignable surface) — core rows like Dashboard / Tools / Settings
  * are inert during customize and don't need snapshotting.
  *
@@ -416,7 +417,7 @@ function updateFooter() {
  */
 function captureLayoutSnapshot( sidebar ) {
 	const snapshot = [];
-	const items = sidebar.querySelectorAll( 'li[data-wpcom-item-id]' );
+	const items = sidebar.querySelectorAll( 'li[data-wp-admin-sidebar-item-id]' );
 	for ( const li of items ) {
 		snapshot.push( {
 			li,
@@ -476,9 +477,10 @@ async function save( options ) {
 	active.state = { ...active.state, isSaving: true, saveError: null };
 	updateFooter();
 
-	// Prefer the fully-resolved `restUrl` emitted by the data planner — on WPCOM
-	// it points at the public-api endpoint registered in wp-content/rest-api-plugins/,
-	// on Phase B (standalone plugin) it points at the same-origin /wp-json/. The
+	// Prefer the fully-resolved `restUrl` emitted by the data planner — when a
+	// host overrides via the `wp_admin_sidebar_layout_rest_url` filter (e.g.,
+	// to route through a centralized public-api endpoint), this carries the
+	// host's URL; on plain WP it carries the same-origin /wp-json/ route. The
 	// `restRoot` fallback is for older inline payloads that didn't include
 	// `restUrl`; it assumes the core `wp-admin-sidebar/v1` route on /wp-json/.
 	const url = options.restUrl
@@ -511,8 +513,8 @@ async function save( options ) {
 		// sees the latest state instead of the stale layoutDelta captured
 		// when wireCustomizeButtons() ran on initial load.
 		// browse-rail.js#wireCustomizeButtons reads this fresh on each click.
-		if ( typeof window !== 'undefined' && window.wpcomAdminSidebarData ) {
-			window.wpcomAdminSidebarData.layoutDelta = saved;
+		if ( typeof window !== 'undefined' && window.wpAdminSidebarData ) {
+			window.wpAdminSidebarData.layoutDelta = saved;
 		}
 		updateFooter();
 		exitCustomizer();

@@ -63,16 +63,16 @@ describe( 'findAutoExpandGroup', () => {
 describe( 'applyState', () => {
 	test( 'mutates data-expanded and aria-expanded on the toggle', () => {
 		const groupEl = document.createElement( 'li' );
-		groupEl.classList.add( 'wpcom-sidebar-group' );
-		groupEl.innerHTML = '<button type="button" class="wpcom-sidebar-group__toggle" aria-expanded="false"></button>';
+		groupEl.classList.add( 'wp-admin-sidebar-group' );
+		groupEl.innerHTML = '<button type="button" class="wp-admin-sidebar-group__toggle" aria-expanded="false"></button>';
 
 		applyState( groupEl, true );
 		expect( groupEl.getAttribute( 'data-expanded' ) ).toBe( 'true' );
-		expect( groupEl.querySelector( '.wpcom-sidebar-group__toggle' ).getAttribute( 'aria-expanded' ) ).toBe( 'true' );
+		expect( groupEl.querySelector( '.wp-admin-sidebar-group__toggle' ).getAttribute( 'aria-expanded' ) ).toBe( 'true' );
 
 		applyState( groupEl, false );
 		expect( groupEl.getAttribute( 'data-expanded' ) ).toBe( 'false' );
-		expect( groupEl.querySelector( '.wpcom-sidebar-group__toggle' ).getAttribute( 'aria-expanded' ) ).toBe( 'false' );
+		expect( groupEl.querySelector( '.wp-admin-sidebar-group__toggle' ).getAttribute( 'aria-expanded' ) ).toBe( 'false' );
 	} );
 } );
 
@@ -85,14 +85,14 @@ describe( 'applyExpandCollapse — sessionStorage round-trip', () => {
 		const sidebar = document.createElement( 'ul' );
 		sidebar.id = 'adminmenu';
 		const groupEl = document.createElement( 'li' );
-		groupEl.classList.add( 'wpcom-sidebar-group' );
+		groupEl.classList.add( 'wp-admin-sidebar-group' );
 		groupEl.setAttribute( 'data-group', groupId );
 		groupEl.setAttribute( 'data-expanded', 'false' );
 		groupEl.innerHTML = `
-			<div class="wpcom-sidebar-group__header">
-				<button type="button" class="wpcom-sidebar-group__toggle" aria-expanded="false"></button>
+			<div class="wp-admin-sidebar-group__header">
+				<button type="button" class="wp-admin-sidebar-group__toggle" aria-expanded="false"></button>
 			</div>
-			<ul class="wpcom-sidebar-group__children" id="wpcom-sidebar-group-${ groupId }"></ul>
+			<ul class="wp-admin-sidebar-group__children" id="wp-admin-sidebar-group-${ groupId }"></ul>
 		`;
 		sidebar.appendChild( groupEl );
 		document.body.innerHTML = '';
@@ -110,18 +110,18 @@ describe( 'applyExpandCollapse — sessionStorage round-trip', () => {
 		expect( groupEl.getAttribute( 'data-expanded' ) ).toBe( 'false' );
 
 		// Click to expand.
-		groupEl.querySelector( '.wpcom-sidebar-group__toggle' ).click();
+		groupEl.querySelector( '.wp-admin-sidebar-group__toggle' ).click();
 		expect( groupEl.getAttribute( 'data-expanded' ) ).toBe( 'true' );
 
 		// Storage carries the new state, scoped per site.
-		const stored = JSON.parse( window.sessionStorage.getItem( 'wpcom-sidebar:groups:42' ) );
+		const stored = JSON.parse( window.sessionStorage.getItem( 'wp-admin-sidebar:groups:42' ) );
 		expect( stored ).toEqual( { plugins: true } );
 	} );
 
 	test( 'auto-expand wins over stored collapsed state', () => {
 		const { sidebar, groupEl } = buildSidebarWithGroup( 'plugins' );
 		// Pre-seed sessionStorage with collapsed state.
-		window.sessionStorage.setItem( 'wpcom-sidebar:groups:42', JSON.stringify( { plugins: false } ) );
+		window.sessionStorage.setItem( 'wp-admin-sidebar:groups:42', JSON.stringify( { plugins: false } ) );
 
 		const navModel = {
 			groups: [
@@ -148,11 +148,11 @@ describe( 'applyExpandCollapse — sessionStorage round-trip', () => {
 
 		// Site 1: expand.
 		applyExpandCollapse( sidebar, navModel, { currentUrl: '/wp-admin/edit.php', siteId: 1 } );
-		sidebar.querySelector( '.wpcom-sidebar-group__toggle' ).click();
+		sidebar.querySelector( '.wp-admin-sidebar-group__toggle' ).click();
 
 		// Site 2: should not see Site 1's state.
-		const site2 = JSON.parse( window.sessionStorage.getItem( 'wpcom-sidebar:groups:2' ) || 'null' );
-		const site1 = JSON.parse( window.sessionStorage.getItem( 'wpcom-sidebar:groups:1' ) );
+		const site2 = JSON.parse( window.sessionStorage.getItem( 'wp-admin-sidebar:groups:2' ) || 'null' );
+		const site1 = JSON.parse( window.sessionStorage.getItem( 'wp-admin-sidebar:groups:1' ) );
 		expect( site1 ).toEqual( { plugins: true } );
 		expect( site2 ).toBeNull();
 	} );

@@ -2,23 +2,18 @@
 /**
  * Two-layer signal extraction.
  *
- * Layer 1 (extract_raw): byte-for-byte mirror of the existing admin-menu REST
- * endpoint's parser at:
- *
- *   wp-content/mu-plugins/jetpack-plugin/sun/_inc/lib/core-api/wpcom-endpoints/class-wpcom-rest-api-v2-endpoint-admin-menu.php:456-528
- *
- * The endpoint stays the source of truth for the parsing rules. We mirror it
- * here so the sidebar can reuse the same shape; an equivalence test asserts
- * byte-identical output between the two implementations and stays green
- * whenever the endpoint changes.
+ * Layer 1 (extract_raw): byte-for-byte mirror of the parsing rules used by the
+ * Calypso admin-menu REST endpoint shipped in jetpack-mu-wpcom on WordPress.com.
+ * That endpoint is the de-facto source of truth for how WP `$menu` / `$submenu`
+ * structures get decoded into a typed signal shape; we mirror it here so the
+ * sidebar can reuse the same shape, and an equivalence test (run on hosts with
+ * the endpoint installed) asserts byte-identical output.
  *
  * Layer 2 (map_to_nav): converts the camelCase raw shape into the snake_case
  * nav-model ItemSignal, with derived numeric_badge and attention fields. This
  * mapping is sidebar-specific and does not need to match the endpoint.
  *
- * Contract reference: plan 03-contracts.md § 5.
- *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -152,10 +147,10 @@ class Sidebar_Signals {
 
 		// `inline_text` is intentionally NOT in the attention OR. It marks plan-tier
 		// or status labels like "Premium" / "BETA" / "NEW" which are decorative,
-		// not "this needs your attention" indicators. Sandbox-tier verification on
-		// chriskmnds.wordpress.com surfaced this: the WPCOM Upgrades item carries
-		// an inline-text "Premium" tag that bubbled up to a group-level red dot
-		// even though no plugin item had a real notification.
+		// not "this needs your attention" indicators. Field-found regression: a
+		// host's "Upgrades" entry that carries an inline-text "Premium" tag would
+		// otherwise bubble up to a group-level red dot even though no item under
+		// it had a real notification.
 		$attention = ( null !== $count && $count > 0 )
 			|| ( null !== $numeric_badge && $numeric_badge > 0 )
 			|| ( null !== $badge && '' !== $badge );

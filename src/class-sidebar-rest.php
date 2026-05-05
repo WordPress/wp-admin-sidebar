@@ -3,22 +3,19 @@
  * REST handler for the per-user, per-site sidebar layout.
  *
  * Registers `GET /wp-admin-sidebar/v1/layout` and `POST /wp-admin-sidebar/v1/layout`
- * on `rest_api_init`. On WPCOM, the same handlers are exposed under
- * `wpcom/v2/wp-admin-sidebar/layout` by the WPCOM REST endpoint plugin at
- * `wp-content/rest-api-plugins/endpoints/wp-admin-sidebar.php`. See plan
- * 03-contracts.md § 10 for the namespace abstraction; the WPCOM-specific
- * route exists because `register_rest_route` calls from a regular mu-plugin
- * do not surface in WPCOM's centralized REST API dispatcher.
+ * on `rest_api_init`. Hosts that route REST requests through a centralized
+ * dispatcher (instead of the standard `/wp-json/` surface) can register a
+ * separate REST endpoint that delegates back to these handlers; the
+ * `wp_admin_sidebar_layout_rest_url` filter lets the host advertise its own
+ * URL to the customizer client.
  *
  * Read/write goes through the bound `Sidebar_Layout_Storage`, never through
- * a concrete user-meta or user-attribute call directly. The default in the
- * core layer is `WP_User_Meta_Storage`; on WPCOM the bootstrap binds the
- * WPCOM user-attribute implementation instead (lives in /src/wpcom-integration/).
+ * a concrete user-meta or user-attribute call directly. The default
+ * implementation is `WP_User_Meta_Storage`; hosts can rebind via the
+ * `wp_admin_sidebar_storage` filter (e.g., a network-wide attribute that
+ * roams saved layouts across a user's connected sites).
  *
- * Contract reference: plan 03-contracts.md § 3 (LayoutDelta), § 4 (REST surface),
- *                     § 9 (Storage abstraction).
- *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,8 +27,9 @@ if ( class_exists( 'Sidebar_Rest' ) ) {
 }
 
 /**
- * Layout REST handler. Stateless. Validation lives here so the WPCOM alias can
- * pass requests through unchanged.
+ * Layout REST handler. Stateless. Validation lives here so any host-side
+ * REST alias (e.g., a centralized public-API dispatcher) can pass requests
+ * through unchanged.
  */
 class Sidebar_Rest {
 
@@ -54,14 +52,13 @@ class Sidebar_Rest {
 	/**
 	 * Hook the route registrations + the admin-ajax fallback handler.
 	 *
-	 * The admin-ajax surface exists because WPCOM disables /wp-json/ on user
-	 * blogs (only public-api.wordpress.com and a handful of allow-listed
-	 * environments expose it), and public-api itself uses OAuth2 / proxy-
-	 * request auth that is not natively reachable from wp-admin pages with
-	 * the wp_rest cookie nonce. admin-ajax.php is same-origin with wp-admin
-	 * on every environment, accepts the same cookie nonce, and is the
-	 * pragmatic surface for the customizer save POST. The same handler logic
-	 * runs here as on the REST route.
+	 * The admin-ajax surface exists for hosts where `/wp-json/` is not
+	 * routable from wp-admin pages (e.g., a managed-WordPress host that
+	 * routes REST through a centralized public-api dispatcher with
+	 * non-cookie auth). admin-ajax.php is same-origin with wp-admin on
+	 * every environment, accepts the wp_rest / nonce-style cookie auth,
+	 * and is a pragmatic fallback for the customizer save POST. The same
+	 * handler logic runs here as on the REST route.
 	 */
 	public static function register(): void {
 		add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
@@ -111,15 +108,14 @@ class Sidebar_Rest {
 	 * Permission gate for both verbs. Two checks:
 	 *
 	 *   1. The feature must be enabled for the current user via the
-	 *      `wp_admin_sidebar_enabled` filter (sticker on WPCOM, opt-in
-	 *      toggle on plain WP). When the gate fails, return 401/403 from the
-	 *      REST framework rather than 200 with empty data — defense-in-depth
-	 *      so non-stickered blogs can't be probed via this endpoint, even
-	 *      though the handlers themselves only operate on the calling user's
-	 *      own data.
-	 *   2. The caller must have read capability on the site. Mirror of the
-	 *      existing admin-menu endpoint
-	 *      (class-wpcom-rest-api-v2-endpoint-admin-menu.php:74).
+	 *      `wp_admin_sidebar_enabled` filter (e.g., a host-side sticker or
+	 *      flag on managed environments, the per-user admin-bar opt-in
+	 *      toggle on plain WP). When the gate fails, return 401/403 from
+	 *      the REST framework rather than 200 with empty data — defense-
+	 *      in-depth so blogs without the feature enabled can't be probed
+	 *      via this endpoint, even though the handlers themselves only
+	 *      operate on the calling user's own data.
+	 *   2. The caller must have read capability on the site.
 	 *
 	 * The feature gate also makes the platform-wide kill switch
 	 * (`add_filter( 'wp_admin_sidebar_enabled', '__return_false', 999 )`)
@@ -199,9 +195,9 @@ class Sidebar_Rest {
 	/**
 	 * Admin-ajax handler for the customizer save POST. Reads the JSON body off
 	 * php://input, runs it through the same validation + storage path as
-	 * `handle_post`, and returns the persisted delta as JSON. Used by the WPCOM-
-	 * merge flow because /wp-json/ is disabled on user blogs there (see
-	 * `register()` docblock).
+	 * `handle_post`, and returns the persisted delta as JSON. Used as the
+	 * fallback save surface on hosts where `/wp-json/` is not routable from
+	 * wp-admin pages (see `register()` docblock).
 	 */
 	public static function handle_admin_ajax_save(): void {
 		// Feature gate (matches permission_check on the REST routes). Defense-

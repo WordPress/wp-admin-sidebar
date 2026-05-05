@@ -4,16 +4,12 @@
  *
  * The classifier needs a clean, predictable input shape. WordPress's $menu /
  * $submenu globals carry well-known pathologies — null/false submenu rows,
- * hidden items, missing capabilities — that the existing admin-menu REST
- * endpoint guards against in its own preparation phase. We mirror those guards
- * here so the classifier never has to.
+ * hidden items, missing capabilities — that the Calypso admin-menu REST
+ * endpoint (shipped in jetpack-mu-wpcom on WordPress.com) guards against in
+ * its own preparation phase. We mirror those guards here so the classifier
+ * never has to.
  *
- * Reference for the patterns we mirror:
- *   wp-content/mu-plugins/jetpack-plugin/sun/_inc/lib/core-api/wpcom-endpoints/class-wpcom-rest-api-v2-endpoint-admin-menu.php:137-142,263-270,320-322
- *
- * Contract reference: plan 03-contracts.md § 0.
- *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

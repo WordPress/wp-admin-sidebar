@@ -24,11 +24,11 @@ export function attachKeyboardReorder( sidebar, controller ) {
 		if ( ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown' ) {
 			return;
 		}
-		const grip = ev.target instanceof Element ? ev.target.closest( '.wpcom-sidebar-item__grip' ) : null;
+		const grip = ev.target instanceof Element ? ev.target.closest( '.wp-admin-sidebar-item__grip' ) : null;
 		if ( ! grip ) {
 			return;
 		}
-		const li = grip.closest( 'li.wpcom-sidebar-item--reassignable' );
+		const li = grip.closest( 'li.wp-admin-sidebar-item--reassignable' );
 		const container = li && li.parentElement;
 		if ( ! li || ! container ) {
 			return;
@@ -37,7 +37,7 @@ export function attachKeyboardReorder( sidebar, controller ) {
 
 		const direction = ev.key === 'ArrowUp' ? -1 : 1;
 		const siblings = Array.from( container.children ).filter(
-			( el ) => el.tagName === 'LI' && ! el.classList.contains( 'wpcom-sidebar-drop-indicator' )
+			( el ) => el.tagName === 'LI' && ! el.classList.contains( 'wp-admin-sidebar-drop-indicator' )
 		);
 		const current = siblings.indexOf( li );
 		const next = current + direction;
@@ -50,7 +50,7 @@ export function attachKeyboardReorder( sidebar, controller ) {
 		// actually swap into.
 		let target = next;
 		while ( target >= 0 && target < siblings.length ) {
-			if ( siblings[ target ].classList.contains( 'wpcom-sidebar-item--reassignable' ) ) {
+			if ( siblings[ target ].classList.contains( 'wp-admin-sidebar-item--reassignable' ) ) {
 				break;
 			}
 			target += direction;
@@ -59,12 +59,12 @@ export function attachKeyboardReorder( sidebar, controller ) {
 			return;
 		}
 
-		const itemId = li.getAttribute( 'data-wpcom-item-id' );
+		const itemId = li.getAttribute( 'data-wp-admin-sidebar-item-id' );
 		if ( ! itemId ) {
 			return;
 		}
 
-		const groupContainer = container.closest( 'li.wpcom-sidebar-group' );
+		const groupContainer = container.closest( 'li.wp-admin-sidebar-group' );
 		const groupId = groupContainer ? groupContainer.getAttribute( 'data-group' ) : null;
 		const position = groupId
 			? { kind: 'in_group', group_id: groupId, index: target }

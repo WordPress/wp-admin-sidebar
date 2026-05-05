@@ -156,18 +156,18 @@ describe( 'wrapIntoGroups', () => {
 		const result = wrapIntoGroups( sidebar, navModel, null );
 
 		// Container exists and carries the right data attributes.
-		const container = sidebar.querySelector( '.wpcom-sidebar-group[data-group="plugins"]' );
+		const container = sidebar.querySelector( '.wp-admin-sidebar-group[data-group="plugins"]' );
 		expect( container ).not.toBeNull();
 		expect( container.getAttribute( 'data-expanded' ) ).toBe( 'false' );
 
 		// Both plugin items moved into the children list.
-		const children = container.querySelector( '.wpcom-sidebar-group__children' );
+		const children = container.querySelector( '.wp-admin-sidebar-group__children' );
 		expect( children.contains( woo ) ).toBe( true );
 		expect( children.contains( jp ) ).toBe( true );
 
 		// Items got tagged with the compound itemId + menu slug.
-		expect( woo.getAttribute( 'data-wpcom-item-id' ) ).toBe( 'plugin:woo:-:woocommerce' );
-		expect( woo.getAttribute( 'data-wpcom-menu-slug' ) ).toBe( 'woocommerce' );
+		expect( woo.getAttribute( 'data-wp-admin-sidebar-item-id' ) ).toBe( 'plugin:woo:-:woocommerce' );
+		expect( woo.getAttribute( 'data-wp-admin-sidebar-menu-slug' ) ).toBe( 'woocommerce' );
 
 		// The unclassified core item (menu-posts) stayed at top-level.
 		const posts = sidebar.querySelector( '#menu-posts' );
@@ -197,7 +197,7 @@ describe( 'wrapIntoGroups', () => {
 
 		const result = wrapIntoGroups( sidebar, navModel, null );
 
-		expect( sidebar.querySelector( '.wpcom-sidebar-group' ) ).toBeNull();
+		expect( sidebar.querySelector( '.wp-admin-sidebar-group' ) ).toBeNull();
 		expect( result.groups ).toHaveLength( 0 );
 	} );
 
@@ -219,9 +219,9 @@ describe( 'wrapIntoGroups', () => {
 
 		wrapIntoGroups( sidebar, navModel, null );
 
-		const header = sidebar.querySelector( '.wpcom-sidebar-group__header' );
-		const toggle = header.querySelector( ':scope > .wpcom-sidebar-group__toggle' );
-		const customize = header.querySelector( ':scope > .wpcom-sidebar-group__customize' );
+		const header = sidebar.querySelector( '.wp-admin-sidebar-group__header' );
+		const toggle = header.querySelector( ':scope > .wp-admin-sidebar-group__toggle' );
+		const customize = header.querySelector( ':scope > .wp-admin-sidebar-group__customize' );
 
 		// Both are direct children of the header (siblings, not nested).
 		expect( toggle ).not.toBeNull();
@@ -231,7 +231,7 @@ describe( 'wrapIntoGroups', () => {
 
 		// aria-expanded matches the initial collapsed state.
 		expect( toggle.getAttribute( 'aria-expanded' ) ).toBe( 'false' );
-		expect( toggle.getAttribute( 'aria-controls' ) ).toBe( 'wpcom-sidebar-group-plugins' );
+		expect( toggle.getAttribute( 'aria-controls' ) ).toBe( 'wp-admin-sidebar-group-plugins' );
 
 		// Customize button is inert until A.2 wires the handler.
 		expect( customize.disabled ).toBe( true );
@@ -255,7 +255,7 @@ describe( 'wrapIntoGroups', () => {
 
 		wrapIntoGroups( sidebar, navModel, null );
 
-		const customize = sidebar.querySelector( '.wpcom-sidebar-group[data-group="tools"] .wpcom-sidebar-group__customize' );
+		const customize = sidebar.querySelector( '.wp-admin-sidebar-group[data-group="tools"] .wp-admin-sidebar-group__customize' );
 		expect( customize ).toBeNull();
 	} );
 } );
@@ -329,8 +329,8 @@ describe( 'applyLayoutDelta', () => {
 			],
 		} );
 		expect( result.applied ).toBe( 1 );
-		const children = sidebar.querySelectorAll( '.wpcom-sidebar-group[data-group="plugins"] .wpcom-sidebar-group__children > li' );
-		const ids = Array.from( children ).map( ( li ) => li.getAttribute( 'data-wpcom-menu-slug' ) );
+		const children = sidebar.querySelectorAll( '.wp-admin-sidebar-group[data-group="plugins"] .wp-admin-sidebar-group__children > li' );
+		const ids = Array.from( children ).map( ( li ) => li.getAttribute( 'data-wp-admin-sidebar-menu-slug' ) );
 		expect( ids[ 0 ] ).toBe( 'jetpack' );
 	} );
 
@@ -344,7 +344,7 @@ describe( 'applyLayoutDelta', () => {
 			],
 		} );
 		const firstChild = sidebar.firstElementChild;
-		expect( firstChild.getAttribute( 'data-wpcom-menu-slug' ) ).toBe( 'jetpack' );
+		expect( firstChild.getAttribute( 'data-wp-admin-sidebar-menu-slug' ) ).toBe( 'jetpack' );
 	} );
 
 	test( 'index out of range clamps to end of container', () => {
@@ -356,9 +356,9 @@ describe( 'applyLayoutDelta', () => {
 				{ itemId: 'plugin:unknown:-:jetpack', position: { kind: 'in_group', group_id: 'plugins', index: 99 } },
 			],
 		} );
-		const children = sidebar.querySelectorAll( '.wpcom-sidebar-group[data-group="plugins"] .wpcom-sidebar-group__children > li' );
+		const children = sidebar.querySelectorAll( '.wp-admin-sidebar-group[data-group="plugins"] .wp-admin-sidebar-group__children > li' );
 		const last = children[ children.length - 1 ];
-		expect( last.getAttribute( 'data-wpcom-menu-slug' ) ).toBe( 'jetpack' );
+		expect( last.getAttribute( 'data-wp-admin-sidebar-menu-slug' ) ).toBe( 'jetpack' );
 	} );
 
 	test( 'stale itemId is silently skipped, real ones still apply', () => {
@@ -373,8 +373,8 @@ describe( 'applyLayoutDelta', () => {
 		} );
 		expect( result.applied ).toBe( 1 );
 		expect( result.skipped ).toBe( 1 );
-		const children = sidebar.querySelectorAll( '.wpcom-sidebar-group[data-group="plugins"] .wpcom-sidebar-group__children > li' );
-		expect( children[ 0 ].getAttribute( 'data-wpcom-menu-slug' ) ).toBe( 'jetpack' );
+		const children = sidebar.querySelectorAll( '.wp-admin-sidebar-group[data-group="plugins"] .wp-admin-sidebar-group__children > li' );
+		expect( children[ 0 ].getAttribute( 'data-wp-admin-sidebar-menu-slug' ) ).toBe( 'jetpack' );
 	} );
 
 	test( 'unknown group_id is silently skipped (registry-data evolved away from a saved override)', () => {
@@ -400,8 +400,8 @@ describe( 'applyLayoutDelta', () => {
 				{ itemId: 'plugin:unknown:-:jetpack', position: { kind: 'in_group', group_id: 'plugins', index: 0 } },
 			],
 		} );
-		const children = sidebar.querySelectorAll( '.wpcom-sidebar-group[data-group="plugins"] .wpcom-sidebar-group__children > li' );
-		const ids = Array.from( children ).map( ( li ) => li.getAttribute( 'data-wpcom-menu-slug' ) );
+		const children = sidebar.querySelectorAll( '.wp-admin-sidebar-group[data-group="plugins"] .wp-admin-sidebar-group__children > li' );
+		const ids = Array.from( children ).map( ( li ) => li.getAttribute( 'data-wp-admin-sidebar-menu-slug' ) );
 		// jetpack inserted at 0 last, so it ends up at 0; wpseo, which was at 0
 		// before the second override ran, gets pushed to 1.
 		expect( ids[ 0 ] ).toBe( 'jetpack' );

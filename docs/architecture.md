@@ -18,7 +18,7 @@ src/
 ├── class-sidebar-signals.php           Extracts attention/badge/count signals from menu titles.
 ├── class-sidebar-classifier.php        Reads $menu/$submenu, classifies items into the registry,
                                         builds the navModel that the JS consumes.
-├── class-sidebar-data-planner.php      Emits the inline `wpcomAdminSidebarData` JSON block
+├── class-sidebar-data-planner.php      Emits the inline `wpAdminSidebarData` JSON block
                                         in the page head, with navModel + saved layout delta + meta.
 ├── class-sidebar-rest.php              REST endpoints + admin-ajax fallback handler.
                                         Validates the LayoutDelta, persists via the storage interface.
@@ -38,7 +38,7 @@ src/
     ├── drag-drop.js                    Drag with synthetic ghost + drop indicator.
     ├── keyboard-reorder.js             Arrow keys + Enter/Space-to-pick semantics.
     ├── move-menu.js                    3-dot trigger + "Move to" popup.
-    └── customizer.css                  Customizer-mode CSS scoped under body.wpcom-sidebar-mode-customize.
+    └── customizer.css                  Customizer-mode CSS scoped under body.wp-admin-sidebar-mode-customize.
 
 tests/
 ├── bootstrap.php                       Test scaffolding: minimal WP shims for CLI runs.
@@ -58,13 +58,13 @@ Sidebar_Classifier::build_nav_model()  ← reads $menu/$submenu, classifies via 
                                          builds the navModel (groups + items)
 ↓
 [in_admin_header priority 2]
-Sidebar_Data_Planner::emit()           ← emits inline <script id="wpcom-admin-sidebar-data">
+Sidebar_Data_Planner::emit()           ← emits inline <script id="wp-admin-sidebar-data">
                                          containing { navModel, layoutDelta, meta }
 ↓
 [browser receives HTML]
 ↓
 [DOMContentLoaded]
-browse-rail.js entry script runs       ← reads wpcomAdminSidebarData,
+browse-rail.js entry script runs       ← reads wpAdminSidebarData,
                                          wraps DOM into groups,
                                          applies saved layout overrides,
                                          attaches expand/collapse handlers
@@ -93,7 +93,7 @@ A build step (target: Vite, lifted from `WordPress/desktop-mode`'s pattern) beco
 
 ### Plain `require_once`, no PSR-4
 
-Mirrors the wpcom mu-plugin's pattern and `WordPress/desktop-mode`. The bootstrap is a flat list of `require_once` calls; each class file declares a procedural-style class name (`Sidebar_Classifier`, `Sidebar_Rest`, …). No autoload, no namespace, no PSR-4. WordPress plugin idiom.
+Follows the convention used by `WordPress/desktop-mode` and the WordPress.com mu-plugin where this code was incubated. The bootstrap is a flat list of `require_once` calls; each class file declares a procedural-style class name (`Sidebar_Classifier`, `Sidebar_Rest`, …). No autoload, no namespace, no PSR-4. WordPress plugin idiom.
 
 ### Filter-API, not service container
 
@@ -101,7 +101,7 @@ Hosts integrate by hooking documented filters and actions, not by injecting serv
 
 ### Mid-deploy safety
 
-The bootstrap includes a `file_exists` guard around every required file before the require chain runs. Mid-deploy (rsync) on environments like WordPress.com lands files non-deterministically; a partial deploy where `wp-admin-sidebar.php` arrives before `src/class-sidebar-rest.php` would fatal on `require_once` without the guard. Plus a per-call `file_exists` wrapper on the require line and a `class_exists` guard at the `Sidebar_Rest::register()` call site for static analyzers (gherald) that pattern-match on per-call wrapping.
+The bootstrap includes a `file_exists` guard around every required file before the require chain runs. On environments where deploys land files non-deterministically (rsync-style), a partial deploy in which `wp-admin-sidebar.php` arrives before `src/class-sidebar-rest.php` would fatal on `require_once` without the guard. Plus a per-call `file_exists` wrapper on the require line and a `class_exists` guard at the `Sidebar_Rest::register()` call site for static analyzers (gherald) that pattern-match on per-call wrapping.
 
 ### `/src/` portability
 
