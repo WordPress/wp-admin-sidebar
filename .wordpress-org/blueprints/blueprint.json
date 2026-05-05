@@ -55,7 +55,7 @@
       "options": { "activate": true }
     },
     {
-      "step": "setUserMeta",
+      "step": "updateUserMeta",
       "userId": 1,
       "meta": {
         "wp_admin_sidebar_enabled": "1"
