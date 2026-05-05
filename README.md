@@ -21,13 +21,13 @@ The plugin is functional and shipping behind a sticker on a subset of WordPress.
 
 The fastest way is the WordPress Playground demo (no install, no setup):
 
-> 🔗 **[Try in WordPress Playground →](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/wp-admin-sidebar/main/.wordpress-org/blueprints/blueprint.json)**
+> 🔗 **[Try in WordPress Playground →](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/WordPress/wp-admin-sidebar/trunk/.wordpress-org/blueprints/blueprint.json)**
 
 The blueprint boots WordPress with a representative plugin set (WooCommerce, Yoast SEO, Jetpack), activates this plugin, and drops you in `wp-admin/`. Click **"Try the new sidebar"** in the admin bar to opt in.
 
 To install on your own WordPress site:
 
-1. Clone this repo into `wp-content/plugins/wp-admin-sidebar/`, or download the latest [release zip](https://github.com/Automattic/wp-admin-sidebar/releases) and upload via wp-admin Plugins → Add New → Upload Plugin.
+1. Clone this repo into `wp-content/plugins/wp-admin-sidebar/`, or download the latest [release zip](https://github.com/WordPress/wp-admin-sidebar/releases) and upload via wp-admin Plugins → Add New → Upload Plugin.
 2. Activate. The plugin is dormant until you opt in.
 3. Click the **"Try the new sidebar"** item in the admin bar at the top of any wp-admin page. The page reloads with the redesigned sidebar.
 4. Click again to switch back. Your saved layouts persist across opt-out / opt-in.
