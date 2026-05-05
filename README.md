@@ -5,9 +5,7 @@
 [![License: GPL-2.0+](https://img.shields.io/badge/license-GPL--2.0%2B-blue.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-> **🚧 Staging notice.** This repository currently lives at `Automattic/wp-admin-sidebar` while we work out repo-creation under the WordPress GitHub org. The destination is `WordPress/wp-admin-sidebar`; we'll transfer once a WordPress-org Owner accepts. The codebase, license, and contribution model are already what they will be at the destination — only the URL changes.
-
-The wp-admin sidebar gets crowded fast. Install half a dozen plugins and the left nav balloons from twelve items to twenty-five, with WooCommerce, Yoast, Jetpack, and other plugin-added items competing with core. **WP Admin Sidebar** is a small WordPress plugin that groups plugin-added items into a single collapsible **Plugins** section at the bottom of the sidebar. Per-user, opt-in via an admin-bar toggle, fully reverts on deactivation. Drag, keyboard-reorder, or use a "Move to" menu to reposition any item; positions persist across sessions, per-site for each user.
+The wp-admin sidebar gets crowded fast. Install half a dozen plugins and the left nav balloons from twelve items to twenty-five, with WooCommerce, Yoast, Jetpack, and other plugin-added items competing with core. **WP Admin Sidebar** is a small WordPress plugin that improves the wp-admin sidebar, starting with personal rearrangement of items and a curated **Plugins** group that consolidates plugin-added entries at the bottom. Per-user, opt-in via an admin-bar toggle, fully reverts on deactivation. Drag, keyboard-reorder, or use a "Move to" menu to reposition any item; positions persist across sessions, per-site for each user.
 
 It is built incrementally on top of wp-admin: plain ES modules, no React, no Gutenberg surface — a thin layer of JavaScript over server-rendered HTML, and a small set of PHP filter hooks for hosts and adapter authors to shape the experience for their environments.
 
