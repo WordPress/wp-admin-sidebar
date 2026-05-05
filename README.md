@@ -23,7 +23,7 @@ The fastest way is the WordPress Playground demo (no install, no setup):
 
 > 🔗 **[Try in WordPress Playground →](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/WordPress/wp-admin-sidebar/trunk/.wordpress-org/blueprints/blueprint.json)**
 
-The blueprint boots WordPress with a representative plugin set (WooCommerce, Contact Form 7, Classic Editor, Query Monitor), activates this plugin, and drops you in `wp-admin/`. Click **"Try the new sidebar"** in the admin bar to opt in.
+The blueprint boots WordPress with a representative plugin set (The Events Calendar, Contact Form 7, Classic Editor, Query Monitor), activates this plugin, and drops you in `wp-admin/`. Click **"Try the new sidebar"** in the admin bar to opt in.
 
 To install on your own WordPress site:
 
