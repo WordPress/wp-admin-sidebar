@@ -7,6 +7,8 @@
 
 The wp-admin sidebar gets crowded fast. Install half a dozen plugins and the left nav balloons from twelve items to twenty-five, with WooCommerce, Yoast, Jetpack, and other plugin-added items competing with core. **WP Admin Sidebar** is a small WordPress plugin that improves the wp-admin sidebar, starting with personal rearrangement of items and a curated **Plugins** group that consolidates plugin-added entries at the bottom. Per-user, opt-in via an admin-bar toggle, fully reverts on deactivation. Drag, keyboard-reorder, or use a "Move to" menu to reposition any item; positions persist across sessions, per-site for each user.
 
+![Personalizing the wp-admin sidebar: drag a plugin item out of the Plugins group to any position you like, then save.](https://raw.githubusercontent.com/WordPress/wp-admin-sidebar/trunk/.github/assets/plugins-reorder.png)
+
 It is built incrementally on top of wp-admin: plain ES modules, no React, no Gutenberg surface — a thin layer of JavaScript over server-rendered HTML, and a small set of PHP filter hooks for hosts and adapter authors to shape the experience for their environments.
 
 ## Status
