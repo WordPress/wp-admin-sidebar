@@ -57,13 +57,13 @@ class Sidebar_Data_Planner {
 				//
 				// `restUrl` is the fully-resolved layout endpoint. The default is
 				// the same-origin /wp-json/ path that resolves to the core
-				// namespace `Sidebar_Rest::register_routes()` registers. WPCOM
-				// overrides via the `wpcom_admin_sidebar_layout_rest_url` filter
-				// because rest_url() / home_url('/wp-json/') is not routed on
-				// user blogs there — the WPCOM-merge route lives under
+				// namespace `Sidebar_Rest::register_routes()` registers. Hosts
+				// override via the `wp_admin_sidebar_layout_rest_url` filter
+				// (the WPCOM adapter does this because rest_url() /
+				// home_url('/wp-json/') is not routed on user blogs there;
+				// the WPCOM-merge route lives under
 				// `wpcom/v2/sites/<blog_id>/wp-admin-sidebar/layout` on
-				// public-api.wordpress.com. Phase B's standalone plugin doesn't
-				// need to override; the default works on plain WP.
+				// public-api.wordpress.com). The default works on plain WP.
 				//
 				// `restRoot` stays for back-compat with consumers that build
 				// their own URL; the customizer prefers `restUrl` when present.
@@ -105,7 +105,15 @@ class Sidebar_Data_Planner {
 	 */
 	private static function resolve_rest_url(): string {
 		$default = home_url( '/wp-json/wp-admin-sidebar/v1/layout' );
-		return (string) apply_filters( 'wpcom_admin_sidebar_layout_rest_url', $default );
+		$url     = (string) apply_filters( 'wp_admin_sidebar_layout_rest_url', $default );
+		// Legacy alias bridge — drop in v0.2.x.
+		$url = (string) apply_filters_deprecated(
+			'wpcom_admin_sidebar_layout_rest_url',
+			array( $url ),
+			'0.1.0',
+			'wp_admin_sidebar_layout_rest_url'
+		);
+		return $url;
 	}
 
 	/**
@@ -114,7 +122,14 @@ class Sidebar_Data_Planner {
 	 */
 	private static function get_storage(): Sidebar_Layout_Storage {
 		$default = new WP_User_Meta_Storage();
-		$bound   = apply_filters( 'wpcom_admin_sidebar_storage', $default );
+		$bound   = apply_filters( 'wp_admin_sidebar_storage', $default );
+		// Legacy alias bridge — drop in v0.2.x.
+		$bound = apply_filters_deprecated(
+			'wpcom_admin_sidebar_storage',
+			array( $bound ),
+			'0.1.0',
+			'wp_admin_sidebar_storage'
+		);
 		return $bound instanceof Sidebar_Layout_Storage ? $bound : $default;
 	}
 

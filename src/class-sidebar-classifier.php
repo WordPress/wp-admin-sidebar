@@ -47,7 +47,7 @@ class Sidebar_Classifier {
 	 * Read $menu / $submenu, normalize, classify, build the nav model.
 	 *
 	 * Wired to `in_admin_header` priority 1. Skips work entirely if the
-	 * `wpcom_admin_sidebar_enabled` filter resolves to false (dark-deploy default).
+	 * `wp_admin_sidebar_enabled` filter resolves to false (dark-deploy default).
 	 */
 	public static function build_nav_model(): void {
 		$user_id = get_current_user_id();
@@ -55,10 +55,18 @@ class Sidebar_Classifier {
 			return;
 		}
 
-		// Default: false. WPCOM_Gating::is_enabled flips it true when the blog
-		// sticker is present and the rest of the predicate agrees. Generic-WP
-		// (Phase B) bootstrap flips it true via __return_true.
-		if ( ! apply_filters( 'wpcom_admin_sidebar_enabled', false, $user_id ) ) {
+		// Default: false. Host adapter flips it true when its predicate agrees
+		// (e.g., WPCOM blog sticker). Plain-WP bootstrap flips it true based on
+		// the per-user opt-in admin-bar toggle.
+		$enabled = apply_filters( 'wp_admin_sidebar_enabled', false, $user_id );
+		// Legacy alias bridge — drop in v0.2.x.
+		$enabled = apply_filters_deprecated(
+			'wpcom_admin_sidebar_enabled',
+			array( $enabled, $user_id ),
+			'0.1.0',
+			'wp_admin_sidebar_enabled'
+		);
+		if ( ! $enabled ) {
 			return;
 		}
 
@@ -69,8 +77,15 @@ class Sidebar_Classifier {
 			is_array( $submenu ) ? $submenu : array()
 		);
 
-		$registry = wpcom_admin_sidebar_default_registry();
-		$registry = (array) apply_filters( 'wpcom_admin_sidebar_registry', $registry );
+		$registry = wp_admin_sidebar_default_registry();
+		$registry = (array) apply_filters( 'wp_admin_sidebar_registry', $registry );
+		// Legacy alias bridge — drop in v0.2.x.
+		$registry = (array) apply_filters_deprecated(
+			'wpcom_admin_sidebar_registry',
+			array( $registry ),
+			'0.1.0',
+			'wp_admin_sidebar_registry'
+		);
 
 		$nav_items = array();
 		foreach ( $normalized['top_level'] as $row ) {
@@ -200,9 +215,16 @@ class Sidebar_Classifier {
 
 		$entry = $registry[ $item_id ] ?? null;
 		if ( null === $entry ) {
-			$entry = (array) apply_filters( 'wpcom_admin_sidebar_classify', null, $item_id, $row );
+			$entry = apply_filters( 'wp_admin_sidebar_classify', null, $item_id, $row );
+			// Legacy alias bridge — drop in v0.2.x.
+			$entry = apply_filters_deprecated(
+				'wpcom_admin_sidebar_classify',
+				array( $entry, $item_id, $row ),
+				'0.1.0',
+				'wp_admin_sidebar_classify'
+			);
 			if ( ! is_array( $entry ) || empty( $entry['itemId'] ) ) {
-				$entry = wpcom_admin_sidebar_unknown_default( $item_id, $menu_slug, $title );
+				$entry = wp_admin_sidebar_unknown_default( $item_id, $menu_slug, $title );
 			}
 		}
 

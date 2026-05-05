@@ -65,7 +65,24 @@ class Sidebar_Rest {
 	 */
 	public static function register(): void {
 		add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
-		add_action( 'wp_ajax_wpcom_admin_sidebar_layout_save', array( __CLASS__, 'handle_admin_ajax_save' ) );
+		// Canonical admin-ajax handler. The legacy `wp_ajax_wpcom_admin_sidebar_layout_save`
+		// hook is also bound for one cycle so a host adapter that hasn't migrated
+		// its `wp_admin_sidebar_layout_rest_url` URL still works. Drop in v0.2.x.
+		add_action( 'wp_ajax_wp_admin_sidebar_layout_save', array( __CLASS__, 'handle_admin_ajax_save' ) );
+		add_action( 'wp_ajax_wpcom_admin_sidebar_layout_save', array( __CLASS__, 'handle_admin_ajax_save_legacy' ) );
+	}
+
+	/**
+	 * Legacy admin-ajax bridge. Emits a deprecation notice, then routes to the
+	 * canonical handler. Drop in v0.2.x alongside the canonical action above.
+	 */
+	public static function handle_admin_ajax_save_legacy(): void {
+		_deprecated_hook(
+			'wp_ajax_wpcom_admin_sidebar_layout_save',
+			'0.1.0',
+			'wp_ajax_wp_admin_sidebar_layout_save'
+		);
+		self::handle_admin_ajax_save();
 	}
 
 	/**
@@ -94,7 +111,7 @@ class Sidebar_Rest {
 	 * Permission gate for both verbs. Two checks:
 	 *
 	 *   1. The feature must be enabled for the current user via the
-	 *      `wpcom_admin_sidebar_enabled` filter (sticker on WPCOM, opt-in
+	 *      `wp_admin_sidebar_enabled` filter (sticker on WPCOM, opt-in
 	 *      toggle on plain WP). When the gate fails, return 401/403 from the
 	 *      REST framework rather than 200 with empty data — defense-in-depth
 	 *      so non-stickered blogs can't be probed via this endpoint, even
@@ -105,12 +122,20 @@ class Sidebar_Rest {
 	 *      (class-wpcom-rest-api-v2-endpoint-admin-menu.php:74).
 	 *
 	 * The feature gate also makes the platform-wide kill switch
-	 * (`add_filter( 'wpcom_admin_sidebar_enabled', '__return_false', 999 )`)
+	 * (`add_filter( 'wp_admin_sidebar_enabled', '__return_false', 999 )`)
 	 * cover the REST surface as well as the UI surface.
 	 */
 	public static function permission_check(): bool {
 		$user_id = get_current_user_id();
-		if ( ! apply_filters( 'wpcom_admin_sidebar_enabled', false, $user_id ) ) {
+		$enabled = apply_filters( 'wp_admin_sidebar_enabled', false, $user_id );
+		// Legacy alias bridge — drop in v0.2.x.
+		$enabled = apply_filters_deprecated(
+			'wpcom_admin_sidebar_enabled',
+			array( $enabled, $user_id ),
+			'0.1.0',
+			'wp_admin_sidebar_enabled'
+		);
+		if ( ! $enabled ) {
 			return false;
 		}
 		return current_user_can( 'read' );
@@ -185,7 +210,15 @@ class Sidebar_Rest {
 		// fingerprinting the sticker via a probing call and lets the
 		// platform-wide kill switch cover this surface too.
 		$user_id = get_current_user_id();
-		if ( ! apply_filters( 'wpcom_admin_sidebar_enabled', false, $user_id ) ) {
+		$enabled = apply_filters( 'wp_admin_sidebar_enabled', false, $user_id );
+		// Legacy alias bridge — drop in v0.2.x.
+		$enabled = apply_filters_deprecated(
+			'wpcom_admin_sidebar_enabled',
+			array( $enabled, $user_id ),
+			'0.1.0',
+			'wp_admin_sidebar_enabled'
+		);
+		if ( ! $enabled ) {
 			status_header( 401 );
 			wp_send_json(
 				array(
@@ -446,7 +479,14 @@ class Sidebar_Rest {
 	 */
 	private static function get_storage(): Sidebar_Layout_Storage {
 		$default = new WP_User_Meta_Storage();
-		$bound   = apply_filters( 'wpcom_admin_sidebar_storage', $default );
+		$bound   = apply_filters( 'wp_admin_sidebar_storage', $default );
+		// Legacy alias bridge — drop in v0.2.x.
+		$bound = apply_filters_deprecated(
+			'wpcom_admin_sidebar_storage',
+			array( $bound ),
+			'0.1.0',
+			'wp_admin_sidebar_storage'
+		);
 		return $bound instanceof Sidebar_Layout_Storage ? $bound : $default;
 	}
 
@@ -455,10 +495,18 @@ class Sidebar_Rest {
 	 * classifier: defaults + amend filter.
 	 */
 	private static function active_registry(): array {
-		$registry = function_exists( 'wpcom_admin_sidebar_default_registry' )
-			? wpcom_admin_sidebar_default_registry()
+		$registry = function_exists( 'wp_admin_sidebar_default_registry' )
+			? wp_admin_sidebar_default_registry()
 			: array();
-		return (array) apply_filters( 'wpcom_admin_sidebar_registry', $registry );
+		$registry = (array) apply_filters( 'wp_admin_sidebar_registry', $registry );
+		// Legacy alias bridge — drop in v0.2.x.
+		$registry = (array) apply_filters_deprecated(
+			'wpcom_admin_sidebar_registry',
+			array( $registry ),
+			'0.1.0',
+			'wp_admin_sidebar_registry'
+		);
+		return $registry;
 	}
 
 	/**

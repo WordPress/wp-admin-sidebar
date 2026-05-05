@@ -175,7 +175,7 @@ WordPress.com binding (illustrative):
 
 ```php
 add_filter( 'wp_admin_sidebar_layout_rest_url', function () {
-    return admin_url( 'admin-ajax.php?action=wpcom_admin_sidebar_layout_save' );
+    return admin_url( 'admin-ajax.php?action=wp_admin_sidebar_layout_save' );
 } );
 ```
 
@@ -212,7 +212,7 @@ do_action( 'wp_admin_sidebar_layout_reset', int $user_id, int $site_id );
 The plugin registers two write surfaces:
 
 - `POST /wp-json/wp-admin-sidebar/v1/layout` — the canonical REST endpoint. Available on any WordPress install with `/wp-json/` reachable.
-- `wp_ajax_wpcom_admin_sidebar_layout_save` — an admin-ajax fallback for hosts where `/wp-json/` is disabled (e.g., WordPress.com simple sites). Same handler logic, same validation.
+- `wp_ajax_wp_admin_sidebar_layout_save` — an admin-ajax fallback for hosts where `/wp-json/` is disabled (e.g., WordPress.com simple sites). Same handler logic, same validation. The legacy `wp_ajax_wpcom_admin_sidebar_layout_save` hook is also bound for one cycle (drops in v0.2.x).
 
 Both routes' permission check verifies (a) the calling user has `read` capability on the site, and (b) the `wp_admin_sidebar_enabled` filter resolves true for them. A user who isn't opted in cannot probe the endpoint.
 

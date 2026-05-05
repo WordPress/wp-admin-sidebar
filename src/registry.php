@@ -9,20 +9,21 @@
  * The set of group ids is open and configurable: extend by registry-data PR
  * alone — no contract or architectural change. See plan 01-decisions.md § 2.
  *
- * Filter `wpcom_admin_sidebar_registry` lets WPCOM-internal code amend the
- * registry; filter `wpcom_admin_sidebar_classify` classifies single items not
- * in the registry. Filter signatures live in plan 03-contracts.md § 1.
+ * Canonical filters: `wp_admin_sidebar_registry` (amend the registry) and
+ * `wp_admin_sidebar_classify` (classify single items not in the registry).
+ * Legacy `wpcom_admin_sidebar_*` aliases fire one cycle via
+ * `apply_filters_deprecated` for back-compat; drop in v0.2.x.
  *
  * Contract reference: plan 03-contracts.md § 1.
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
 
-if ( ! function_exists( 'wpcom_admin_sidebar_default_registry' ) ) {
+if ( ! function_exists( 'wp_admin_sidebar_default_registry' ) ) {
 
 	/**
 	 * Return the curated default classification registry, keyed by compound itemId.
@@ -30,7 +31,7 @@ if ( ! function_exists( 'wpcom_admin_sidebar_default_registry' ) ) {
 	 * @return array<string, array> Map of itemId → ClassificationEntry. See plan
 	 *                              03-contracts.md § 1 for the entry shape.
 	 */
-	function wpcom_admin_sidebar_default_registry(): array {
+	function wp_admin_sidebar_default_registry(): array {
 
 		// Core items: default_group is null (render flat at top-level).
 		// reassignable: false (Phase 2 UI only exposes plugin items as sources).
@@ -108,11 +109,11 @@ if ( ! function_exists( 'wpcom_admin_sidebar_default_registry' ) ) {
 	}
 }
 
-if ( ! function_exists( 'wpcom_admin_sidebar_unknown_default' ) ) {
+if ( ! function_exists( 'wp_admin_sidebar_unknown_default' ) ) {
 
 	/**
 	 * Default classification for items not in the registry and not handled by the
-	 * `wpcom_admin_sidebar_classify` filter. Routes uncurated plugin-shaped items
+	 * `wp_admin_sidebar_classify` filter. Routes uncurated plugin-shaped items
 	 * into the `plugins` group so the default sidebar experience works without any
 	 * plugin adopting the typed contract.
 	 *
@@ -121,7 +122,7 @@ if ( ! function_exists( 'wpcom_admin_sidebar_unknown_default' ) ) {
 	 * @param string $title     The cleaned canonical title (post-signal extraction).
 	 * @return array ClassificationEntry shape. See plan 03-contracts.md § 1.
 	 */
-	function wpcom_admin_sidebar_unknown_default( string $item_id, string $menu_slug, string $title ): array {
+	function wp_admin_sidebar_unknown_default( string $item_id, string $menu_slug, string $title ): array {
 		// URL-shaped menu slugs (e.g., add_menu_page() with a Calypso link as
 		// the slug — `https://wordpress.com/home/<site>`) are emitted by WPCOM's
 		// own admin-shell wiring. They are conceptually "site-level" links, not
@@ -143,5 +144,31 @@ if ( ! function_exists( 'wpcom_admin_sidebar_unknown_default' ) ) {
 			'reassignable'   => true,
 			'labels'         => array( 'canonical' => $title ),
 		);
+	}
+}
+
+// ─── Legacy function-name aliases ───────────────────────────────────────────
+//
+// One-cycle bridge for hosts (and host adapters) that call the legacy
+// `wpcom_admin_sidebar_*` function names. Drop in v0.2.x. The wrappers emit a
+// PHP deprecation notice via `_deprecated_function`.
+
+if ( ! function_exists( 'wpcom_admin_sidebar_default_registry' ) ) {
+	/**
+	 * @deprecated 0.1.0 Use {@see wp_admin_sidebar_default_registry()} instead.
+	 */
+	function wpcom_admin_sidebar_default_registry(): array {
+		_deprecated_function( __FUNCTION__, '0.1.0', 'wp_admin_sidebar_default_registry' );
+		return wp_admin_sidebar_default_registry();
+	}
+}
+
+if ( ! function_exists( 'wpcom_admin_sidebar_unknown_default' ) ) {
+	/**
+	 * @deprecated 0.1.0 Use {@see wp_admin_sidebar_unknown_default()} instead.
+	 */
+	function wpcom_admin_sidebar_unknown_default( string $item_id, string $menu_slug, string $title ): array {
+		_deprecated_function( __FUNCTION__, '0.1.0', 'wp_admin_sidebar_unknown_default' );
+		return wp_admin_sidebar_unknown_default( $item_id, $menu_slug, $title );
 	}
 }

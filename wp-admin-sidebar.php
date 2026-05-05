@@ -63,11 +63,12 @@ require_once __DIR__ . '/src/class-sidebar-rest.php';
 
 // ─── Default storage + opt-in gating (plain WP) ────────────────────────────
 //
-// Storage default: WP user meta. Hosts can rebind via the
-// `wpcom_admin_sidebar_storage` filter (the legacy name; `wp_admin_sidebar_storage`
-// will be the canonical name post-rename, kickoff plan § A5).
+// Storage default: WP user meta. Hosts can rebind via the canonical
+// `wp_admin_sidebar_storage` filter. The legacy `wpcom_admin_sidebar_storage`
+// alias still fires for one cycle via `apply_filters_deprecated` and emits a
+// deprecation notice; remove in v0.2.x.
 add_filter(
-	'wpcom_admin_sidebar_storage',
+	'wp_admin_sidebar_storage',
 	static function () {
 		return new WP_User_Meta_Storage();
 	}
@@ -77,7 +78,7 @@ add_filter(
 // Mirrors the pattern in WordPress/desktop-mode: opt-in per user, default off,
 // no settings page in v0.1 — a single admin-bar item flips the flag.
 add_filter(
-	'wpcom_admin_sidebar_enabled',
+	'wp_admin_sidebar_enabled',
 	static function ( $enabled, $user_id ) {
 		if ( defined( 'WP_ADMIN_SIDEBAR_FORCE_DISABLED' ) && WP_ADMIN_SIDEBAR_FORCE_DISABLED ) {
 			return false;
@@ -115,7 +116,15 @@ add_action(
 		if ( ! $user_id ) {
 			return;
 		}
-		if ( ! apply_filters( 'wpcom_admin_sidebar_enabled', false, $user_id ) ) {
+		$enabled = apply_filters( 'wp_admin_sidebar_enabled', false, $user_id );
+		// Legacy alias bridge — drop in v0.2.x.
+		$enabled = apply_filters_deprecated(
+			'wpcom_admin_sidebar_enabled',
+			array( $enabled, $user_id ),
+			'0.1.0',
+			'wp_admin_sidebar_enabled'
+		);
+		if ( ! $enabled ) {
 			return;
 		}
 
@@ -178,12 +187,27 @@ add_filter(
 		if ( ! $user_id ) {
 			return $classes;
 		}
-		if ( ! apply_filters( 'wpcom_admin_sidebar_enabled', false, $user_id ) ) {
+		$enabled = apply_filters( 'wp_admin_sidebar_enabled', false, $user_id );
+		// Legacy alias bridge — drop in v0.2.x.
+		$enabled = apply_filters_deprecated(
+			'wpcom_admin_sidebar_enabled',
+			array( $enabled, $user_id ),
+			'0.1.0',
+			'wp_admin_sidebar_enabled'
+		);
+		if ( ! $enabled ) {
 			return $classes;
 		}
 		$classes .= ' wpcom-sidebar-active';
 
-		$storage = apply_filters( 'wpcom_admin_sidebar_storage', new WP_User_Meta_Storage() );
+		$storage = apply_filters( 'wp_admin_sidebar_storage', new WP_User_Meta_Storage() );
+		// Legacy alias bridge — drop in v0.2.x.
+		$storage = apply_filters_deprecated(
+			'wpcom_admin_sidebar_storage',
+			array( $storage ),
+			'0.1.0',
+			'wp_admin_sidebar_storage'
+		);
 		if ( $storage instanceof Sidebar_Layout_Storage ) {
 			$layouts = $storage->get_layouts( $user_id );
 			$site_id = (int) get_current_blog_id();

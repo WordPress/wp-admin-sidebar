@@ -54,9 +54,27 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	}
 }
 
+if ( ! function_exists( 'apply_filters_deprecated' ) ) {
+	function apply_filters_deprecated( $tag, $args, $version, $replacement = '' ) {
+		return $args[0] ?? null;
+	}
+}
+
 if ( ! function_exists( 'add_action' ) ) {
 	function add_action( $tag, $callable, $priority = 10, $accepted_args = 1 ): bool {
 		return true;
+	}
+}
+
+if ( ! function_exists( '_deprecated_function' ) ) {
+	function _deprecated_function( $function_name, $version, $replacement = '' ): void {
+		// no-op shim
+	}
+}
+
+if ( ! function_exists( '_deprecated_hook' ) ) {
+	function _deprecated_hook( $hook_name, $version, $replacement = '', $message = '' ): void {
+		// no-op shim
 	}
 }
 

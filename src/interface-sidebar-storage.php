@@ -2,17 +2,17 @@
 /**
  * Storage abstraction for per-user sidebar layout data.
  *
- * Lives in /src/core/ — universal, zero WPCOM dependencies. The default
- * implementation (WP_User_Meta_Storage) ships alongside; the WPCOM-specific
- * implementation (WPCOM_User_Attribute_Storage) lives in /src/wpcom-integration/.
+ * Lives in /src/ — universal, host-neutral. The default implementation
+ * (WP_User_Meta_Storage) ships alongside. Host adapters supply their own
+ * implementation (e.g. WPCOM_User_Attribute_Storage in the wpcom integration
+ * mu-plugin) by binding via the `wp_admin_sidebar_storage` filter.
  *
- * The bootstrap binds the active implementation via the `wpcom_admin_sidebar_storage`
- * filter. Code that reads or writes layouts MUST go through this filter so the same
- * call-site works in both environments.
+ * Code that reads or writes layouts MUST go through this filter so the same
+ * call-site works on every host.
  *
  * Contract reference: plan 03-contracts.md § 9.
  *
- * @package WPCOM_Admin_Sidebar
+ * @package WP_Admin_Sidebar
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
