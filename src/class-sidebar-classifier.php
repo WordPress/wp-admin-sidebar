@@ -318,11 +318,11 @@ class Sidebar_Classifier {
 	 * REST endpoint (admin URL for top-level slugs, query-string-aware for plugin slugs).
 	 */
 	private static function resolve_url( string $menu_slug, ?string $parent ): string {
-		// URL-shaped menu slugs (e.g., add_menu_page() called with a Calypso
-		// link as the slug — `https://wordpress.com/home/<site>`) are absolute
-		// destinations already. Wrapping them in admin_url() produces malformed
-		// `/wp-admin/admin.php?page=https://…` strings. Mirrors the detection
-		// in registry.php's classify_top_level().
+		// URL-shaped menu slugs (e.g., a managed host injects `add_menu_page()`
+		// entries whose slug is an external link such as `https://example.com/`)
+		// are absolute destinations already. Wrapping them in admin_url() produces
+		// malformed `/wp-admin/admin.php?page=https://…` strings. Mirrors the
+		// detection in registry.php's classify_top_level().
 		if ( str_starts_with( $menu_slug, 'http://' ) || str_starts_with( $menu_slug, 'https://' ) ) {
 			return $menu_slug;
 		}
