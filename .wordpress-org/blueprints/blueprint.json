@@ -26,7 +26,7 @@
       "step": "installPlugin",
       "pluginData": {
         "resource": "wordpress.org/plugins",
-        "slug": "wordpress-seo"
+        "slug": "contact-form-7"
       },
       "options": { "activate": true }
     },
