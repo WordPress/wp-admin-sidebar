@@ -13,6 +13,7 @@
 const GHOST_CLASS = 'wp-admin-sidebar-drag-ghost';
 const INDICATOR_CLASS = 'wp-admin-sidebar-drop-indicator';
 const SOURCE_DRAGGING = 'wp-admin-sidebar-item--dragging';
+const BODY_DRAGGING = 'wp-admin-sidebar-dragging';
 
 /**
  * Attach drag-drop handlers to the sidebar root for the customizer mode.
@@ -79,6 +80,7 @@ export function attachDragDrop( sidebar, controller ) {
 			sourcePosition: positionForElement( li ),
 		};
 		li.classList.add( SOURCE_DRAGGING );
+		document.body.classList.add( BODY_DRAGGING );
 		ghost = createGhost( li );
 		document.body.appendChild( ghost );
 		moveGhost( ev.clientX, ev.clientY );
@@ -122,6 +124,7 @@ export function attachDragDrop( sidebar, controller ) {
 			activeItem.li.classList.remove( SOURCE_DRAGGING );
 			activeItem = null;
 		}
+		document.body.classList.remove( BODY_DRAGGING );
 		if ( ghost && ghost.parentNode ) {
 			ghost.parentNode.removeChild( ghost );
 		}
@@ -247,6 +250,13 @@ export function attachDragDrop( sidebar, controller ) {
 function createGhost( li ) {
 	const ghost = document.createElement( 'div' );
 	ghost.className = GHOST_CLASS;
+
+	// Mirror the source row's dimensions so the floating preview matches the
+	// item being dragged (DES-583). Reading the rect once at drag start is
+	// cheap and the source's size doesn't change mid-drag.
+	const rect = li.getBoundingClientRect();
+	ghost.style.width = `${ rect.width }px`;
+	ghost.style.height = `${ rect.height }px`;
 
 	const link = li.querySelector( ':scope > a' );
 	if ( link ) {

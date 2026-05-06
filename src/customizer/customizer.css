@@ -105,7 +105,9 @@ body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more:focus-visible 
 
 /* Floating ghost element follows the cursor while dragging. The ghost is a
  * shallow clone of the source row so it carries the same grip + dashicon +
- * label as the live row (Figma 3505:75323). */
+ * label as the live row (Figma 3505:75323). Width/height are set inline by
+ * createGhost() from the source row's bounding rect (DES-583), so the
+ * preview matches the dragged item rather than a hardcoded min-width. */
 .wp-admin-sidebar-drag-ghost {
 	position: fixed;
 	top: 0;
@@ -114,7 +116,6 @@ body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more:focus-visible 
 	pointer-events: none;
 	display: flex;
 	align-items: center;
-	min-width: 144px;
 	padding: 0;
 	background: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
 	color: var( --wp-admin-sidebar-item-fg, #f0f0f1 );
@@ -163,15 +164,29 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--draggi
 	opacity: var( --wp-admin-sidebar-drag-source-opacity, 0.3 );
 }
 
-/* Drop indicator line drawn between rows. */
+/* Drop indicator line drawn between rows. Spans the full sidebar width so the
+ * landing slot is visually unambiguous regardless of the row depth (DES-584).
+ */
 li.wp-admin-sidebar-drop-indicator {
 	list-style: none;
-	margin: 0 0 0 16px;
+	margin: 0;
 	padding: 0;
 	height: var( --wp-admin-sidebar-drop-indicator-height, 2px );
-	width: var( --wp-admin-sidebar-drop-indicator-width, 112px );
+	width: 100%;
 	background: var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	pointer-events: none;
+}
+
+/* While dragging, suppress wp-admin's blue `#adminmenu a:hover` highlight on
+ * other reassignable rows so the ghost preview is the only moving visual
+ * (DES-590). The body class is toggled by drag-drop.js on pointerdown /
+ * cleanup. Anchored on `#adminmenu` to win specificity against wp-admin's own
+ * id-anchored hover rule; the source row keeps its faded state from
+ * `.wp-admin-sidebar-item--dragging`.
+ */
+body.wp-admin-sidebar-dragging #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover {
+	background: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
+	color: inherit;
 }
 
 /* Customizer-only: viewport-bound the sidebar wrap and turn it into a flex
