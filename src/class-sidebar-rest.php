@@ -109,9 +109,9 @@ class Sidebar_Rest {
 	 *
 	 *   1. The feature must be enabled for the current user via the
 	 *      `wp_admin_sidebar_enabled` filter (e.g., a host-side sticker or
-	 *      flag on managed environments, the per-user admin-bar opt-in
-	 *      toggle on plain WP). When the gate fails, return 401/403 from
-	 *      the REST framework rather than 200 with empty data — defense-
+	 *      flag on managed environments, the per-user `wp_admin_sidebar_enabled`
+	 *      user-meta flag on plain WP). When the gate fails, return 401/403
+	 *      from the REST framework rather than 200 with empty data — defense-
 	 *      in-depth so blogs without the feature enabled can't be probed
 	 *      via this endpoint, even though the handlers themselves only
 	 *      operate on the calling user's own data.

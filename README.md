@@ -7,7 +7,7 @@
 
 The wp-admin sidebar gets crowded fast. Install half a dozen plugins and the left nav quickly grows from twelve items to twenty-five, with WooCommerce, Yoast, Jetpack, and other plugin-added items competing with core.
 
-**WP Admin Sidebar** is a small WordPress plugin that improves the wp-admin sidebar, starting with personal rearrangement of items and a curated **Plugins** group that consolidates plugin-added entries at the bottom. Per-user, opt-in via an admin-bar toggle, fully reverts on deactivation. Drag, keyboard-reorder, or use a "Move to" menu to reposition any item; positions persist across sessions, per-site for each user.
+**WP Admin Sidebar** is a small WordPress plugin that improves the wp-admin sidebar, starting with personal rearrangement of items and a curated **Plugins** group that consolidates plugin-added entries at the bottom. Activating the plugin enables the redesign for every logged-in user on the site — install is the opt-in. Fully reverts on deactivation. Drag, keyboard-reorder, or use a "Move to" menu to reposition any item; positions persist across sessions, per-site for each user.
 
 ![Personalizing the wp-admin sidebar: drag a plugin item out of the Plugins group to any position you like, then save.](https://raw.githubusercontent.com/WordPress/wp-admin-sidebar/trunk/.github/assets/plugins-reorder.png)
 
@@ -25,14 +25,14 @@ The fastest way is the WordPress Playground demo (no install, no setup):
 
 > 🔗 **[Try in WordPress Playground →](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/WordPress/wp-admin-sidebar/trunk/.wordpress-org/blueprints/blueprint.json)**
 
-The blueprint boots WordPress with a representative plugin set (The Events Calendar, Contact Form 7, Classic Editor, Query Monitor), activates this plugin, and drops you in `wp-admin/`. Click **"Try the new sidebar"** in the admin bar to opt in.
+The blueprint boots WordPress with a representative plugin set (The Events Calendar, Contact Form 7, Classic Editor, Query Monitor), activates this plugin, and drops you in `wp-admin/`. The redesigned sidebar is active on first load.
 
 To install on your own WordPress site:
 
 1. Clone this repo into `wp-content/plugins/wp-admin-sidebar/`, or download the latest [release zip](https://github.com/WordPress/wp-admin-sidebar/releases) and upload via wp-admin Plugins → Add New → Upload Plugin.
-2. Activate. The plugin is dormant until you opt in.
-3. Click the **"Try the new sidebar"** item in the admin bar at the top of any wp-admin page. The page reloads with the redesigned sidebar.
-4. Click again to switch back. Your saved layouts persist across opt-out / opt-in.
+2. Activate. The redesign is on for every logged-in user. Deactivate to revert.
+
+   Hosts that need finer control (per-blog, per-user, percentage rollout) can override by binding the `wp_admin_sidebar_enabled` filter from an adapter. See [`docs/host-extension-api.md`](docs/host-extension-api.md). A future deliberate opt-in/opt-out surface is tracked in [#16](https://github.com/WordPress/wp-admin-sidebar/issues/16). Saved layouts persist across deactivate / reactivate cycles.
 
 ## How it works
 
