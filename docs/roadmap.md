@@ -10,7 +10,7 @@ A milestone-by-milestone view of where the plugin is going. Updated as we ship.
 
 - This repo, public from day 1, GPL-2.0+, GitHub Issues + Discussions enabled.
 - The portable plugin source (`/src/`) — verbatim copy from where the code was incubated as a WordPress.com mu-plugin. Plain ES modules, plain PHP, no build step, no React.
-- Bootstrap `wp-admin-sidebar.php`: plugin header, four constants, mid-deploy file_exists guards, hooks, default storage binding, per-user opt-in gate (user-meta flag; v0.1.x ships no UI for flipping it — use wp-cli or a host adapter).
+- Bootstrap `wp-admin-sidebar.php`: plugin header, four constants, mid-deploy file_exists guards, hooks, default storage binding, enablement gate (default: enabled for any logged-in user — install is the opt-in; hosts can override the `wp_admin_sidebar_enabled` filter for per-blog/per-user/percentage control).
 - Documented filter API + host-extension guide ([`docs/host-extension-api.md`](host-extension-api.md)).
 - Repo metadata: README, CONTRIBUTING, SECURITY, MAINTAINERS, LICENSE.
 - Issue templates + Discussions categories.

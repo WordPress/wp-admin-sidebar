@@ -70,17 +70,20 @@ add_filter(
 	}
 );
 
-// Opt-in gate: per-user, default off. The user-meta flag
-// `wp_admin_sidebar_enabled` (0/1) controls per-user opt-in.
+// Enablement gate: install is the opt-in. The plugin defaults to enabled for
+// any logged-in user on plain WP — activating the plugin is the opt-in
+// signal, matching the original design (see plan 01-decisions.md § 9).
 //
-// v0.1.x intentionally ships no UI for flipping this flag. External tools
-// (wp-cli, host adapters, a future settings UI) own that surface. Examples:
+// Hosts that need finer control (per-blog, per-user, percentage rollout, …)
+// override this filter from a host adapter. Two control levers ship in-tree
+// for development convenience:
 //
-//   wp user meta update <id> wp_admin_sidebar_enabled 1
+//   define( 'WP_ADMIN_SIDEBAR_FORCE_DISABLED', true );  // kill switch
+//   define( 'WP_ADMIN_SIDEBAR_FORCE_ENABLED',  true );  // bypass gate
 //
-// or, from a host plugin, by hooking the `wp_admin_sidebar_enabled` filter
-// (see docs/host-extension-api.md). The user-meta convention is preserved
-// so any of those mechanisms can flip the gate without further integration.
+// A future deliberate opt-in/opt-out surface (admin-level toggle, per-user
+// override, settings page, …) is tracked in
+// https://github.com/WordPress/wp-admin-sidebar/issues/16.
 add_filter(
 	'wp_admin_sidebar_enabled',
 	static function ( $enabled, $user_id ) {
@@ -90,11 +93,8 @@ add_filter(
 		if ( defined( 'WP_ADMIN_SIDEBAR_FORCE_ENABLED' ) && WP_ADMIN_SIDEBAR_FORCE_ENABLED ) {
 			return true;
 		}
-		if ( ! $user_id ) {
-			return false;
-		}
-		// Per-user opt-in. Default 0 = off. Flip via wp-cli or a host adapter.
-		return (bool) get_user_meta( $user_id, 'wp_admin_sidebar_enabled', true );
+		// Logged-in users get the redesign; logged-out / cron / cli requests do not.
+		return (bool) $user_id;
 	},
 	10,
 	2

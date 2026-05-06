@@ -45,14 +45,14 @@ The WooCommerce team has been building a drill-down navigation pattern that cons
 Compared to the prior-art designs, this plugin's posture is:
 
 - **Incremental, not radical.** We keep wp-admin's existing nav structure and overlay a grouping behavior on top. Plugin items collapse into a "Plugins" group at the bottom; core items keep their core positions. A user who already knows wp-admin still finds Dashboard, Posts, Tools, Settings exactly where they always were.
-- **Opt-in, not default.** Per-user opt-in via the `wp_admin_sidebar_enabled` user-meta flag (default off). v0.1.x ships no built-in UI for flipping this flag; sites flip it via wp-cli (`wp user meta update`) or via a host adapter that binds the `wp_admin_sidebar_enabled` filter (e.g., a managed host's per-blog feature sticker).
+- **Install is the opt-in.** Activating the plugin enables the redesign for every logged-in user on the site; deactivating reverts. Hosts that need finer control bind the `wp_admin_sidebar_enabled` filter (per-blog sticker, per-user override, percentage rollout, …). A deliberate admin / per-user opt-in/opt-out surface is tracked in [issue #16](https://github.com/WordPress/wp-admin-sidebar/issues/16).
 - **Per-user, not per-site.** Each user customises their own layout, persisted per-site. A site has many users with different preferences; each manages their own.
 - **Filter-API-driven, not Core-PR-driven.** Hosts and plugin authors integrate via documented filters. We're a layer on top of wp-admin, not a replacement for it. If/when Core wants to upstream parts of this, the filter contract is what would graduate.
 - **Plain JS + PHP, no React, no Gutenberg.** The sidenav surface is a few hundred lines of vanilla ES modules and procedural PHP — small bundle, no build step, no framework lock-in.
 
 ## Other reference implementations and ecosystem
 
-- **WordPress Desktop Mode** — [`github.com/WordPress/desktop-mode`](https://github.com/WordPress/desktop-mode). The shape we modeled this plugin's contribution model on. Same posture: opt-in per user, doesn't change Core, fully reverts on deactivation, lives under the WordPress GitHub org.
+- **WordPress Desktop Mode** — [`github.com/WordPress/desktop-mode`](https://github.com/WordPress/desktop-mode). The shape we modeled this plugin's contribution model on: doesn't change Core, fully reverts on deactivation, lives under the WordPress GitHub org. (Desktop-mode adds a per-user opt-in via an admin-bar toggle; we kept the install-is-the-opt-in default for v0.1.x and track the deliberate per-user surface in [issue #16](https://github.com/WordPress/wp-admin-sidebar/issues/16).)
 - **WordPress.com sidebar redesign rollout** — the WordPress.com team is shipping this same code as a managed-WordPress experience. The WordPress.com integration mu-plugin (`wp-admin-sidebar-integration`) consumes this plugin's filter API to add WordPress.com's sticker-based gating, user-attribute-backed storage, and Atomic-cache-flush behaviour. Other managed-WordPress hosts can follow the same pattern.
 
 ## Conversation channels

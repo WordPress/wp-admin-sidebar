@@ -53,13 +53,6 @@
         "url": "https://github.com/WordPress/wp-admin-sidebar/releases/latest/download/wp-admin-sidebar.zip"
       },
       "options": { "activate": true }
-    },
-    {
-      "step": "updateUserMeta",
-      "userId": 1,
-      "meta": {
-        "wp_admin_sidebar_enabled": "1"
-      }
     }
   ]
 }

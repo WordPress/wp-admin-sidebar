@@ -16,7 +16,7 @@ Gate the entire feature for the current user.
 apply_filters( 'wp_admin_sidebar_enabled', bool $enabled, int $user_id ): bool
 ```
 
-The plugin's default returns `false` unless the per-user `wp_admin_sidebar_enabled` user-meta flag is set to `1`. v0.1.x intentionally ships no UI for flipping that flag; sites flip it via wp-cli (`wp user meta update <id> wp_admin_sidebar_enabled 1`) or via a host adapter that binds this filter directly. A host can force on/off with this filter. The filter runs at every relevant hook: `in_admin_header` (data-pipeline gate), `admin_enqueue_scripts` (asset-enqueue gate), `admin_body_class` (CSS scope gate), and on REST + admin-ajax permission checks.
+The plugin's default returns `true` for any logged-in user — installing the plugin is the opt-in. A host can override on a per-blog, per-user, percentage, or any other axis by binding this filter and returning the desired bool. The filter runs at every relevant hook: `in_admin_header` (data-pipeline gate), `admin_enqueue_scripts` (asset-enqueue gate), `admin_body_class` (CSS scope gate), and on REST + admin-ajax permission checks.
 
 **WordPress.com binding (illustrative):**
 
@@ -231,7 +231,7 @@ The validate-delta logic is shared (`Sidebar_Rest::validate_delta()`). Validatio
 - `WP_ADMIN_SIDEBAR_FILE` — `__FILE__` of the bootstrap.
 - `WP_ADMIN_SIDEBAR_DIR` — bootstrap's directory.
 - `WP_ADMIN_SIDEBAR_URL` — bootstrap's URL.
-- `WP_ADMIN_SIDEBAR_FORCE_ENABLED` — define to `true` to force the gate on for all users (overrides per-user opt-in).
+- `WP_ADMIN_SIDEBAR_FORCE_ENABLED` — define to `true` to force the gate on for all users (bypasses any host-adapter override that would have returned `false`).
 - `WP_ADMIN_SIDEBAR_FORCE_DISABLED` — define to `true` to force the gate off (kill switch).
 
 ## Stability promise

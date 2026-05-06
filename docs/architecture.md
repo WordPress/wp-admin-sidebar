@@ -10,7 +10,7 @@ For the data contracts — `navModel`, `LayoutDelta`, classification entries —
 ```
 wp-admin-sidebar.php                    Plugin bootstrap. Plugin header, four constants,
                                         require_once chain, hooks, default storage binding,
-                                        per-user opt-in gate (user-meta flag, no UI in v0.1.x).
+                                        enablement gate (default: enabled for any logged-in user).
 src/
 ├── interface-sidebar-storage.php       The storage contract: get_layouts / put_layouts.
 ├── class-user-meta-storage.php         Default storage. Writes to user_meta keyed per site.
@@ -81,7 +81,7 @@ validate_delta + storage->put_layouts  ← persists to user_meta (or host-bound 
 exitCustomizer()                       ← back to default mode, body class restored
 ```
 
-Every code path that produces user-visible behavior or data emission is gated by the `wp_admin_sidebar_enabled` filter. On a non-opted-in user, the classifier's `build_nav_model()` early-returns at the gate, the data planner finds null and early-returns, the asset enqueue closure returns, the body-class filter returns unchanged, the REST routes return 401 from `permission_check`. Net cost on an opted-out user: a few hundred microseconds for the filter check and the bootstrap's class-load pass.
+Every code path that produces user-visible behavior or data emission is gated by the `wp_admin_sidebar_enabled` filter. The default is `true` for any logged-in user (install is the opt-in). When a host adapter overrides the filter to `false` for a given user/blog, the classifier's `build_nav_model()` early-returns at the gate, the data planner finds null and early-returns, the asset enqueue closure returns, the body-class filter returns unchanged, the REST routes return 401 from `permission_check`. Net cost on a gate-disabled user: a few hundred microseconds for the filter check and the bootstrap's class-load pass.
 
 ## Key design decisions
 
