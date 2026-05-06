@@ -61,6 +61,15 @@ export function attachDragDrop( sidebar, controller ) {
 			cleanup();
 		}
 
+		// Defensive strip of core's `opensub` hover-intent class. customizer.js
+		// strips it once on enter and the customizer.css block hides
+		// `.wp-submenu` for the duration of the mode, but core's hoverIntent
+		// can re-add `opensub` between enter and the first drag start (the
+		// pointerdown that initiates the drag often arrives mid-hoverIntent
+		// timer). Without this, a flyout flickers in for a frame as the drag
+		// begins. Issue #1 / DES-576 / DES-580.
+		sidebar.querySelectorAll( 'li.menu-top.opensub' ).forEach( ( el ) => el.classList.remove( 'opensub' ) );
+
 		const rect = li.getBoundingClientRect();
 		pointerOffset = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
 

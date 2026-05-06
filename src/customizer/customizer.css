@@ -320,3 +320,30 @@ body.wp-admin-sidebar-mode-customize #collapse-menu {
 	background: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
 	outline: none;
 }
+
+/*
+ * Suppress core submenus during customize mode (issue #1, DES-576 / DES-580).
+ *
+ * wp-admin's `#adminmenu li.menu-top:hover .wp-submenu` and the `opensub` /
+ * `wp-menu-open` classes painted by core's hoverIntent make submenus appear
+ * over reordering rows during customize, which is visually noisy and lets
+ * focus land in a hidden flyout when tabbing through the sidebar. Hide them
+ * for the duration of the mode and disable pointer events so a stray hover
+ * never lights up a flyout. The id-anchored selector matches core's own
+ * specificity so the override beats wp-admin's defaults without `!important`
+ * leaking outside the customize scope.
+ *
+ * The body class is the only entry point — exitCustomizer() strips it, which
+ * fully restores wp-admin's native flyout behaviour. customizer.js also
+ * snapshots and re-applies the `opensub` class so any flyout that was open
+ * the moment customize started returns when customize ends.
+ */
+body.wp-admin-sidebar-mode-customize #adminmenu .wp-submenu {
+	display: none !important;
+	pointer-events: none;
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top.opensub > .wp-submenu,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top.wp-menu-open > .wp-submenu {
+	display: none !important;
+}

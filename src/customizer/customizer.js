@@ -91,6 +91,14 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 	// visible until reload. See exitCustomizer().
 	const layoutSnapshot = captureLayoutSnapshot( sidebar );
 	document.body.classList.add( BODY_MODE_CLASS );
+	// Strip core's `opensub` hover-intent class off any top-level item that
+	// happened to be flyout-open when the user entered customize. The CSS
+	// block in customizer.css hides the submenu wrapper outright, but the
+	// class itself drives other core behaviours (focus management, expanded
+	// state on keyboard nav). Strip on enter, snapshot the affected LIs,
+	// re-apply on exit so the user's pre-customize hover state survives the
+	// session. Issue #1 / DES-576 / DES-580.
+	const opensubSnapshot = snapshotAndStripOpensubClasses( sidebar );
 
 	decorateReassignableItems( sidebar, navModel );
 	const restoreGroupState = expandGroupsForCustomizing( sidebar );
@@ -147,6 +155,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 		beforeunloadHandler,
 		restoreGroupState,
 		layoutSnapshot,
+		opensubSnapshot,
 		helpers,
 		onExit: options && typeof options.onExit === 'function' ? options.onExit : null,
 		options,
@@ -201,6 +210,17 @@ export function exitCustomizer( { confirmIfDirty = false } = {} ) {
 			active.restoreGroupState();
 		} catch ( _ ) {
 			// no-op; groups will simply stay in their current state
+		}
+	}
+	// Re-apply any `opensub` classes we stripped on enter so the user's
+	// pre-customize hover state survives the session. Best-effort: if a
+	// snapshot LI has been removed from the DOM (rare — core menu rebuild
+	// during the session), skip it rather than throw.
+	if ( active.opensubSnapshot ) {
+		for ( const li of active.opensubSnapshot ) {
+			if ( li && li.isConnected ) {
+				li.classList.add( 'opensub' );
+			}
 		}
 	}
 	const onExit = active.onExit;
@@ -424,6 +444,29 @@ function captureLayoutSnapshot( sidebar ) {
 			parent: li.parentElement,
 			nextSibling: li.nextSibling,
 		} );
+	}
+	return snapshot;
+}
+
+/**
+ * Snapshot every top-level LI that core has tagged with the `opensub`
+ * hover-intent class and strip the class so wp-admin doesn't render the
+ * flyout while customize is active. The matching CSS block in customizer.css
+ * also hides `.wp-submenu` outright; this helper exists because the class
+ * itself drives other core behaviours beyond pure visibility (focus
+ * management on keyboard nav, expanded ARIA state). Returning the LIs lets
+ * exitCustomizer() re-apply the class so the user's pre-customize hover
+ * state survives the session. Issue #1 / DES-576 / DES-580.
+ *
+ * @param {HTMLElement} sidebar
+ * @returns {Element[]} snapshot of LIs that previously had `opensub`
+ */
+function snapshotAndStripOpensubClasses( sidebar ) {
+	const snapshot = [];
+	const lis = sidebar.querySelectorAll( 'li.menu-top.opensub' );
+	for ( const li of lis ) {
+		snapshot.push( li );
+		li.classList.remove( 'opensub' );
 	}
 	return snapshot;
 }
