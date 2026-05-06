@@ -16,7 +16,7 @@ Gate the entire feature for the current user.
 apply_filters( 'wp_admin_sidebar_enabled', bool $enabled, int $user_id ): bool
 ```
 
-The plugin's default returns `false` until the user opts in via the admin-bar toggle (which flips a user-meta flag). A host can force on/off with this filter. The filter runs at every relevant hook: `in_admin_header` (data-pipeline gate), `admin_enqueue_scripts` (asset-enqueue gate), `admin_body_class` (CSS scope gate), and on REST + admin-ajax permission checks.
+The plugin's default returns `false` unless the per-user `wp_admin_sidebar_enabled` user-meta flag is set to `1`. v0.1.x intentionally ships no UI for flipping that flag; sites flip it via wp-cli (`wp user meta update <id> wp_admin_sidebar_enabled 1`) or via a host adapter that binds this filter directly. A host can force on/off with this filter. The filter runs at every relevant hook: `in_admin_header` (data-pipeline gate), `admin_enqueue_scripts` (asset-enqueue gate), `admin_body_class` (CSS scope gate), and on REST + admin-ajax permission checks.
 
 **WordPress.com binding (illustrative):**
 

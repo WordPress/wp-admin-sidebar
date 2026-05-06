@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       WP Admin Sidebar
  * Plugin URI:        https://github.com/WordPress/wp-admin-sidebar
- * Description:       Improves the wp-admin sidebar, starting with personal rearrangement of items and a curated "Plugins" group that consolidates plugin-added entries at the bottom. Per-user, opt-in via an admin-bar toggle, fully reverts on deactivation.
- * Version:           0.1.1
+ * Description:       Improves the wp-admin sidebar, starting with personal rearrangement of items and a curated "Plugins" group that consolidates plugin-added entries at the bottom. Per-user opt-in via the `wp_admin_sidebar_enabled` user-meta flag, fully reverts on deactivation.
+ * Version:           0.1.2
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Christos Koumenides, Lucas Mendes
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────
-define( 'WP_ADMIN_SIDEBAR_VERSION', '0.1.1' );
+define( 'WP_ADMIN_SIDEBAR_VERSION', '0.1.2' );
 define( 'WP_ADMIN_SIDEBAR_FILE', __FILE__ );
 define( 'WP_ADMIN_SIDEBAR_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WP_ADMIN_SIDEBAR_URL', plugin_dir_url( __FILE__ ) );
@@ -70,9 +70,17 @@ add_filter(
 	}
 );
 
-// Opt-in gate: per-user, default off. Admin bar toggle flips a user_meta flag.
-// Mirrors the pattern in WordPress/desktop-mode: opt-in per user, default off,
-// no settings page in v0.1 — a single admin-bar item flips the flag.
+// Opt-in gate: per-user, default off. The user-meta flag
+// `wp_admin_sidebar_enabled` (0/1) controls per-user opt-in.
+//
+// v0.1.x intentionally ships no UI for flipping this flag. External tools
+// (wp-cli, host adapters, a future settings UI) own that surface. Examples:
+//
+//   wp user meta update <id> wp_admin_sidebar_enabled 1
+//
+// or, from a host plugin, by hooking the `wp_admin_sidebar_enabled` filter
+// (see docs/host-extension-api.md). The user-meta convention is preserved
+// so any of those mechanisms can flip the gate without further integration.
 add_filter(
 	'wp_admin_sidebar_enabled',
 	static function ( $enabled, $user_id ) {
@@ -85,7 +93,7 @@ add_filter(
 		if ( ! $user_id ) {
 			return false;
 		}
-		// User-meta flag toggled by the admin-bar item below. Default 0 = off.
+		// Per-user opt-in. Default 0 = off. Flip via wp-cli or a host adapter.
 		return (bool) get_user_meta( $user_id, 'wp_admin_sidebar_enabled', true );
 	},
 	10,
@@ -217,64 +225,6 @@ add_filter(
 		}
 
 		return $classes;
-	}
-);
-
-// ─── Admin-bar opt-in toggle ───────────────────────────────────────────────
-//
-// Mirrors WordPress/desktop-mode: the user clicks the admin-bar item to flip
-// `wp_admin_sidebar_enabled` user meta on; the page reloads and the sidebar
-// redesign is active. Click again to flip off.
-add_action(
-	'admin_bar_menu',
-	static function ( $bar ) {
-		if ( ! is_user_logged_in() ) {
-			return;
-		}
-		$user_id  = get_current_user_id();
-		$enabled  = (bool) get_user_meta( $user_id, 'wp_admin_sidebar_enabled', true );
-		$nonce    = wp_create_nonce( 'wp_admin_sidebar_toggle' );
-		$toggle_url = add_query_arg(
-			array(
-				'wp_admin_sidebar_toggle' => $enabled ? '0' : '1',
-				'_wpnonce'                => $nonce,
-			),
-			admin_url()
-		);
-		$bar->add_node(
-			array(
-				'id'    => 'wp-admin-sidebar-toggle',
-				'title' => $enabled ? __( 'Restore default sidebar', 'wp-admin-sidebar' ) : __( 'Try the new sidebar', 'wp-admin-sidebar' ),
-				'href'  => $toggle_url,
-				'meta'  => array(
-					'title' => $enabled
-						? __( 'Switch back to the standard wp-admin sidebar.', 'wp-admin-sidebar' )
-						: __( 'Switch to the grouped, customisable sidebar.', 'wp-admin-sidebar' ),
-				),
-			)
-		);
-	},
-	999
-);
-
-add_action(
-	'admin_init',
-	static function () {
-		if ( ! isset( $_GET['wp_admin_sidebar_toggle'] ) || ! isset( $_GET['_wpnonce'] ) ) {
-			return;
-		}
-		if ( ! is_user_logged_in() ) {
-			return;
-		}
-		$nonce = sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) );
-		if ( ! wp_verify_nonce( $nonce, 'wp_admin_sidebar_toggle' ) ) {
-			return;
-		}
-		$user_id  = get_current_user_id();
-		$enabled  = '1' === sanitize_text_field( wp_unslash( $_GET['wp_admin_sidebar_toggle'] ) );
-		update_user_meta( $user_id, 'wp_admin_sidebar_enabled', $enabled ? '1' : '0' );
-		wp_safe_redirect( remove_query_arg( array( 'wp_admin_sidebar_toggle', '_wpnonce' ) ) );
-		exit;
 	}
 );
 

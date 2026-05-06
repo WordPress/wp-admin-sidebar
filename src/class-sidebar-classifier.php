@@ -55,7 +55,8 @@ class Sidebar_Classifier {
 
 		// Default: false. Host adapter flips it true when its predicate agrees
 		// (e.g., a per-blog feature sticker on a managed host). Plain-WP
-		// bootstrap flips it true based on the per-user opt-in admin-bar toggle.
+		// bootstrap flips it true based on the per-user `wp_admin_sidebar_enabled`
+		// user-meta flag.
 		$enabled = apply_filters( 'wp_admin_sidebar_enabled', false, $user_id );
 		// Legacy alias bridge — drop in v0.2.x.
 		$enabled = apply_filters_deprecated(

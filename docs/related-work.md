@@ -45,7 +45,7 @@ The WooCommerce team has been building a drill-down navigation pattern that cons
 Compared to the prior-art designs, this plugin's posture is:
 
 - **Incremental, not radical.** We keep wp-admin's existing nav structure and overlay a grouping behavior on top. Plugin items collapse into a "Plugins" group at the bottom; core items keep their core positions. A user who already knows wp-admin still finds Dashboard, Posts, Tools, Settings exactly where they always were.
-- **Opt-in, not default.** Users opt in via an admin-bar toggle (mirroring [WordPress/desktop-mode](https://github.com/WordPress/desktop-mode)'s pattern). Default-off until the user clicks "Try the new sidebar."
+- **Opt-in, not default.** Per-user opt-in via the `wp_admin_sidebar_enabled` user-meta flag (default off). v0.1.x ships no built-in UI for flipping this flag; sites flip it via wp-cli (`wp user meta update`) or via a host adapter that binds the `wp_admin_sidebar_enabled` filter (e.g., a managed host's per-blog feature sticker).
 - **Per-user, not per-site.** Each user customises their own layout, persisted per-site. A site has many users with different preferences; each manages their own.
 - **Filter-API-driven, not Core-PR-driven.** Hosts and plugin authors integrate via documented filters. We're a layer on top of wp-admin, not a replacement for it. If/when Core wants to upstream parts of this, the filter contract is what would graduate.
 - **Plain JS + PHP, no React, no Gutenberg.** The sidenav surface is a few hundred lines of vanilla ES modules and procedural PHP — small bundle, no build step, no framework lock-in.

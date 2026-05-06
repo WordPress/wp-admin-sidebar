@@ -10,7 +10,7 @@ For the data contracts — `navModel`, `LayoutDelta`, classification entries —
 ```
 wp-admin-sidebar.php                    Plugin bootstrap. Plugin header, four constants,
                                         require_once chain, hooks, default storage binding,
-                                        opt-in admin-bar toggle.
+                                        per-user opt-in gate (user-meta flag, no UI in v0.1.x).
 src/
 ├── interface-sidebar-storage.php       The storage contract: get_layouts / put_layouts.
 ├── class-user-meta-storage.php         Default storage. Writes to user_meta keyed per site.
