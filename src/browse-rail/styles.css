@@ -193,6 +193,14 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:focus-visible {
 
 /*
  * Children list. Collapsed by default (height: 0) until data-expanded="true".
+ *
+ * `overflow: hidden` is needed in the collapsed state to clip the children
+ * within the `max-height: 0` box. In the expanded state we drop it back to
+ * `visible` so wp-admin's submenu flyouts (positioned absolutely outside
+ * the items' bounding box at `left: 160px`) are not clipped by the group's
+ * children container. Without this, hovering a plugin row inside the
+ * Plugins group never shows its submenu, even though the same item shows
+ * its submenu normally when sitting outside the group.
  */
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__children {
 	list-style: none;
@@ -203,6 +211,7 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__children {
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-admin-sidebar-group__children {
+	overflow: visible;
 	max-height: none;
 }
 
