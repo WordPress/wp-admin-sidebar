@@ -103,6 +103,45 @@ body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more:focus-visible 
 	outline-offset: -2px;
 }
 
+/*
+ * Customize mode: non-reassignable, non-group rows are inert (DES-605).
+ *
+ * Goal: the whole sidebar reads as a clean "edit-only" affordance during
+ * customize. Reassignable items already have no link follow (drag-drop
+ * intercepts) and carry a grab cursor; the rest of the sidebar should match
+ * instead of staying half-interactive (hover paint + href navigation on
+ * Users/Posts/etc.).
+ *
+ * Two pieces:
+ * - `pointer-events: none` on the inner `<a>` blocks click navigation. We
+ *   can't put it on the LI itself: drag-drop.js uses
+ *   `document.elementFromPoint` to find the row under the cursor, and that
+ *   hit-test respects `pointer-events`, so making the LI invisible to it
+ *   would break dropping plugins between non-reassignable rows (DES-590
+ *   requires plugins to be reorderable across the whole sidebar, not just
+ *   within the group).
+ * - `:hover` overrides on the LI suppress core's hover paint (color,
+ *   left-edge stripe via box-shadow, icon color). We don't override
+ *   `> a:hover` paint since `pointer-events: none` blocks `:hover` from
+ *   firing on the anchor at all.
+ *
+ * Group headers (`.wp-admin-sidebar-group`) are excluded so the chevron
+ * toggle and per-group customize button stay live. The `.current` styling
+ * (selected-page indicator) is independent of `:hover` so it survives.
+ */
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group) > a {
+	pointer-events: none;
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group):hover {
+	color: #f0f0f1;
+	box-shadow: none;
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group):hover div.wp-menu-image:before {
+	color: rgba( 240, 246, 252, 0.6 );
+}
+
 /* Floating ghost element follows the cursor while dragging. The ghost is a
  * shallow clone of the source row so it carries the same grip + dashicon +
  * label as the live row (Figma 3505:75323). */
