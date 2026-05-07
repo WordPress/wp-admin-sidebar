@@ -43,15 +43,23 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 8px 16px;
-	min-height: 34px;
+	/* Compact section-header padding (DES-582). Horizontal 8px matches Lucas's
+	 * Figma item frame (3505:74991), which uses `padding: 8px` all around;
+	 * vertical 4px is tighter than Figma so the row reads as a section
+	 * divider rather than a clickable nav row. min-height anchors at 28px so
+	 * the row never collapses below `4 + 20 (content) + 4`. */
+	padding: 4px 8px;
+	min-height: 28px;
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__toggle {
 	flex: 1;
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	/* 6px gap reads tighter than the prior 8px while staying within Figma's
+	 * 8px rhythm (DES-582). Pulls label, signal, and chevron closer
+	 * together inside the section header. */
+	gap: 6px;
 	background: transparent;
 	border: 0;
 	padding: 0;
@@ -88,7 +96,9 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__signal {
 	width: 8px;
 	height: 8px;
 	padding: 0;
-	margin-left: 6px;
+	/* The toggle's `gap: 6px` already supplies spacing between label and
+	 * signal; `margin-left: 0` avoids double-spacing (DES-582). */
+	margin-left: 0;
 	border-radius: 50%;
 	background: #d63638;
 	font-size: 0;
@@ -123,9 +133,13 @@ body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top.wp-ha
 	background-color: transparent;
 }
 
-body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top > .wp-admin-sidebar-group__header:hover {
-	background-color: rgba( 240, 240, 241, 0.06 );
-}
+/*
+ * No hover background on the group header itself (DES-582). The header
+ * reads as a section divider, not a clickable nav row; the chevron and
+ * customize children carry their own hover affordances. The transparent
+ * override above still suppresses wp-admin's blanket `li.menu-top:hover`
+ * paint on the LI, so the row remains visually inert on hover.
+ */
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__chevron {
 	flex: 0 0 auto;
@@ -152,7 +166,11 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize {
 	flex: 0 0 auto;
 	width: 24px;
 	height: 24px;
-	margin-left: 8px;
+	/* Tighter spacing between chevron and customize button (DES-582);
+	 * 6px matches the toggle's internal gap rhythm. Lucas's Figma uses 8px
+	 * gaps but the row reads cleaner here when the customize sits closer
+	 * to the chevron than to the sidebar edge. */
+	margin-left: 6px;
 	background: transparent;
 	border: 0;
 	padding: 0;
