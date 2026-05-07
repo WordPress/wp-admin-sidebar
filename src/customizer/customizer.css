@@ -177,15 +177,32 @@ li.wp-admin-sidebar-drop-indicator {
 	pointer-events: none;
 }
 
-/* While dragging, suppress wp-admin's blue `#adminmenu a:hover` highlight on
- * other reassignable rows so the ghost preview is the only moving visual
- * (DES-590). The body class is toggled by drag-drop.js on pointerdown /
- * cleanup. Anchored on `#adminmenu` to win specificity against wp-admin's own
- * id-anchored hover rule; the source row keeps its faded state from
- * `.wp-admin-sidebar-item--dragging`.
+/* While dragging, suppress wp-admin's blue hover treatment on EVERY top-level
+ * sidebar row, not just reassignable ones (DES-590). The cursor passes over
+ * core items (Posts, Comments, Media, Settings, etc.) and other plugin items
+ * while a row is being dragged inside the Plugins group; without this, those
+ * rows still flash the wp-admin blue background + icon-color treatment, and
+ * the drop indicator stops being the single clear visual signal.
+ *
+ * Two rules:
+ *   1. Anchor background + text color: wp-admin's `#adminmenu a:hover` and
+ *      `li.opensub > a` rules.
+ *   2. Icon color on `div.wp-menu-image:before`: wp-admin colors this
+ *      separately on `li:hover` and `li.opensub`, so a background-only
+ *      override is incomplete (the icon still flashes).
+ *
+ * Both anchored on `#adminmenu` to beat wp-admin's id-anchored specificity.
+ * The body class is toggled by drag-drop.js on pointerdown / cleanup. The
+ * source row keeps its faded state from `.wp-admin-sidebar-item--dragging`.
  */
-body.wp-admin-sidebar-dragging #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover {
+body.wp-admin-sidebar-dragging #adminmenu li.menu-top > a:hover,
+body.wp-admin-sidebar-dragging #adminmenu li.menu-top.opensub > a {
 	background: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
+	color: inherit;
+}
+
+body.wp-admin-sidebar-dragging #adminmenu li.menu-top:hover div.wp-menu-image:before,
+body.wp-admin-sidebar-dragging #adminmenu li.menu-top.opensub div.wp-menu-image:before {
 	color: inherit;
 }
 
