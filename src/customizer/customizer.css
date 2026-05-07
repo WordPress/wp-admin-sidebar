@@ -177,38 +177,54 @@ li.wp-admin-sidebar-drop-indicator {
 	pointer-events: none;
 }
 
-/* During drag, suppress wp-admin's hover treatment on EVERY top-level sidebar
- * row (DES-590). The drop indicator should be the single visual signal; rows
- * the cursor passes over while a plugin is being dragged should look static.
+/* During drag, suppress wp-admin's hover treatment on every top-level row
+ * (DES-590). Goal: rows the cursor passes over look identical to their
+ * non-hovered state; the drop indicator is the only visual signal.
  *
- * Core paints the hover treatment on FOUR distinct selectors that all need to
- * be matched element-by-element; missing any one of them lets core paint
- * through because the cascade only competes when both rules target the same
- * element:
+ * A "general" CSS approach (one rule that disables all hover paint) doesn't
+ * exist without nuking layout — `all: revert` would break inherited
+ * positioning, and there is no `:hover-suppress` pseudo-class. Instead,
+ * minimise the override surface: only override what visibly differs from
+ * the non-hovered state. For each property we either inherit the natural
+ * paint (when it already matches static) or set the static value
+ * explicitly.
  *
- *   - `li.menu-top:hover` paints the LI background + color.
- *   - `#adminmenu a:hover` paints the anchor color (separate from `li:hover`).
- *   - `li.opensub > a.menu-top` paints the anchor background + color when
- *     the LI carries opensub (set by core's hoverIntent timer).
+ * Core's hover paint lands in four distinct places, only some of which need
+ * an override:
+ *
+ *   - `li.menu-top:hover` background + color
+ *     bg: SKIP. core paints `#1d2327` which matches the sidebar's natural
+ *         bg for non-reassignable rows; for reassignable rows,
+ *         customize-mode's `#2c3439` rule has higher specificity and wins.
+ *         No visible change either way.
+ *     color: OVERRIDE to `#f0f0f1` (default sidebar text).
+ *   - `#adminmenu a:hover` color (separate from `li:hover`)
+ *     OVERRIDE to `#f0f0f1`.
+ *   - `li.opensub > a.menu-top` background + color (anchor)
+ *     bg: OVERRIDE to `transparent` so the LI's own bg shows through (which
+ *         is correct in both reassignable and non-reassignable cases).
+ *     color: OVERRIDE to `#f0f0f1`.
  *   - `li:hover .wp-menu-image:before` and `li.opensub .wp-menu-image:before`
- *     paint the icon pseudo-element (color only).
+ *     OVERRIDE icon color to `rgba(240, 246, 252, 0.6)` (default).
  *
- * `color: inherit` doesn't work here either: core's `li:hover` sets a blue
- * color that descendants then inherit, so an anchor-level `color: inherit`
- * resolves to the same blue. Hardcode the non-hovered values
- * (`#f0f0f1` text, `rgba(240, 246, 252, 0.6)` icon) which match wp-admin's
- * default-fresh sidebar palette.
+ * Plus `box-shadow: none` on all of the above to suppress the inset
+ * left-edge stripe core paints on hover/focus.
  *
  * Anchored on `#adminmenu` to beat core's id-anchored specificity. Body class
  * `wp-admin-sidebar-dragging` is toggled by drag-drop.js on pointerdown /
  * cleanup. The source row keeps its faded state from
  * `.wp-admin-sidebar-item--dragging`.
  */
-body.wp-admin-sidebar-dragging #adminmenu li.menu-top:hover,
+body.wp-admin-sidebar-dragging #adminmenu li.menu-top:hover {
+	color: #f0f0f1;
+	box-shadow: none;
+}
+
 body.wp-admin-sidebar-dragging #adminmenu li.menu-top > a:hover,
 body.wp-admin-sidebar-dragging #adminmenu li.menu-top.opensub > a {
-	background-color: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
+	background-color: transparent;
 	color: #f0f0f1;
+	box-shadow: none;
 }
 
 body.wp-admin-sidebar-dragging #adminmenu li.menu-top:hover div.wp-menu-image:before,
