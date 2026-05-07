@@ -349,7 +349,7 @@ class Sidebar_Classifier {
 	 */
 	private static function group_title( string $group_id ): string {
 		$titles = array(
-			'plugins' => __( 'Plugins', 'wp-admin-sidebar' ),
+			'plugins' => __( 'Plugins Menu', 'wp-admin-sidebar' ),
 		);
 		if ( isset( $titles[ $group_id ] ) ) {
 			return $titles[ $group_id ];

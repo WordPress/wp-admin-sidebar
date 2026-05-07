@@ -40,15 +40,17 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group {
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__header {
 	position: relative;
+	box-sizing: border-box;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 8px 16px;
+	padding: 4px 4px 4px 8px;
 	min-height: 34px;
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__toggle {
-	flex: 1;
+	flex: 1 1 auto;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -73,7 +75,11 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__toggle:focus-visible {
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__label {
-	flex: 0 0 auto;
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 /*
@@ -123,19 +129,26 @@ body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top.wp-ha
 	background-color: transparent;
 }
 
-body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top > .wp-admin-sidebar-group__header:hover {
-	background-color: rgba( 240, 240, 241, 0.06 );
+body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top {
+	margin-top: 16px;
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__chevron {
 	flex: 0 0 auto;
-	margin-left: auto;
-	width: 12px;
-	height: 12px;
+	margin-left: 4px;
+	width: 20px;
+	height: 20px;
+	color: var( --wp-admin-sidebar-group-label-fg );
 	background: currentColor;
-	mask: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill-rule='evenodd' d='M3 5l3 3 3-3z'/%3E%3C/svg%3E" ) no-repeat center;
-	-webkit-mask: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill-rule='evenodd' d='M3 5l3 3 3-3z'/%3E%3C/svg%3E" ) no-repeat center;
-	transition: transform 150ms ease;
+	mask: url( "icons/chevron-down.svg" ) no-repeat center / 150%;
+	-webkit-mask: url( "icons/chevron-down.svg" ) no-repeat center / 150%;
+	cursor: pointer;
+	opacity: 0.7;
+	transition: transform 150ms ease, opacity 150ms ease;
+}
+
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__chevron:hover {
+	opacity: 1;
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-admin-sidebar-group__chevron {
@@ -150,9 +163,9 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-a
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize {
 	flex: 0 0 auto;
-	width: 24px;
-	height: 24px;
-	margin-left: 8px;
+	width: 20px;
+	height: 20px;
+	margin-left: 4px;
 	background: transparent;
 	border: 0;
 	padding: 0;
