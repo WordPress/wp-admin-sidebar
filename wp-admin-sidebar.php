@@ -3,7 +3,7 @@
  * Plugin Name:       WP Admin Sidebar
  * Plugin URI:        https://github.com/WordPress/wp-admin-sidebar
  * Description:       Improves the wp-admin sidebar, starting with personal rearrangement of items and a curated "Plugins" group that consolidates plugin-added entries at the bottom. Per-user opt-in via the `wp_admin_sidebar_enabled` user-meta flag, fully reverts on deactivation.
- * Version:           0.1.2
+ * Version:           0.1.3
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Christos Koumenides, Lucas Mendes
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────
-define( 'WP_ADMIN_SIDEBAR_VERSION', '0.1.2' );
+define( 'WP_ADMIN_SIDEBAR_VERSION', '0.1.3' );
 define( 'WP_ADMIN_SIDEBAR_FILE', __FILE__ );
 define( 'WP_ADMIN_SIDEBAR_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WP_ADMIN_SIDEBAR_URL', plugin_dir_url( __FILE__ ) );
