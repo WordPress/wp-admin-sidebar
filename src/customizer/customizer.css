@@ -181,18 +181,19 @@ li.wp-admin-sidebar-drop-indicator {
  * row (DES-590). The drop indicator should be the single visual signal; rows
  * the cursor passes over while a plugin is being dragged should look static.
  *
- * Core paints the hover treatment on three different elements depending on
- * state, so the override has to mirror its selectors element-by-element.
- * Targeting the wrong element (e.g. `> a:hover` to suppress `li:hover`) lets
- * core paint through because it lands on a different element and the cascade
- * doesn't compete:
+ * Core paints the hover treatment on FOUR distinct selectors that all need to
+ * be matched element-by-element; missing any one of them lets core paint
+ * through because the cascade only competes when both rules target the same
+ * element:
  *
- *   - `li.menu-top:hover` paints the LI (background + color).
- *   - `li.menu-top.opensub > a` paints the anchor (background + color).
+ *   - `li.menu-top:hover` paints the LI background + color.
+ *   - `#adminmenu a:hover` paints the anchor color (separate from `li:hover`).
+ *   - `li.opensub > a.menu-top` paints the anchor background + color when
+ *     the LI carries opensub (set by core's hoverIntent timer).
  *   - `li:hover .wp-menu-image:before` and `li.opensub .wp-menu-image:before`
  *     paint the icon pseudo-element (color only).
  *
- * `color: inherit` does not work here either: core's `li:hover` sets a blue
+ * `color: inherit` doesn't work here either: core's `li:hover` sets a blue
  * color that descendants then inherit, so an anchor-level `color: inherit`
  * resolves to the same blue. Hardcode the non-hovered values
  * (`#f0f0f1` text, `rgba(240, 246, 252, 0.6)` icon) which match wp-admin's
@@ -203,11 +204,8 @@ li.wp-admin-sidebar-drop-indicator {
  * cleanup. The source row keeps its faded state from
  * `.wp-admin-sidebar-item--dragging`.
  */
-body.wp-admin-sidebar-dragging #adminmenu li.menu-top:hover {
-	background-color: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
-	color: #f0f0f1;
-}
-
+body.wp-admin-sidebar-dragging #adminmenu li.menu-top:hover,
+body.wp-admin-sidebar-dragging #adminmenu li.menu-top > a:hover,
 body.wp-admin-sidebar-dragging #adminmenu li.menu-top.opensub > a {
 	background-color: var( --wp-admin-sidebar-customizer-item-bg, #2c3439 );
 	color: #f0f0f1;
