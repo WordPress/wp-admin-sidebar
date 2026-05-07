@@ -235,6 +235,11 @@ describe( 'wrapIntoGroups', () => {
 
 		// Customize button is inert until A.2 wires the handler.
 		expect( customize.disabled ).toBe( true );
+
+		// aria-label and data-tooltip stay aligned so screen-reader users and
+		// sighted users see the same label (DES-586).
+		expect( customize.getAttribute( 'aria-label' ) ).toBe( 'Customize plugins' );
+		expect( customize.getAttribute( 'data-tooltip' ) ).toBe( 'Customize plugins' );
 	} );
 
 	test( 'non-plugins group does not render a customize button', () => {
