@@ -377,9 +377,19 @@ body.wp-admin-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 	cursor: not-allowed;
 }
 
-/* Hide the collapse-menu link during customizer mode (replaced by the footer). */
+/*
+ * Keep the wp-admin "Collapse menu" row visible in customize mode but
+ * render it as disabled. Hiding it (previous behaviour) caused the
+ * sidebar/footer layout to shift on enter/exit — see DES-579.
+ */
 body.wp-admin-sidebar-mode-customize #collapse-menu {
-	display: none;
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+body.wp-admin-sidebar-mode-customize #collapse-menu a,
+body.wp-admin-sidebar-mode-customize #collapse-menu button {
+	cursor: not-allowed;
 }
 
 /* Move-to menu popup. Positioned with inline styles by JS. */
