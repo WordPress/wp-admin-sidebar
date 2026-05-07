@@ -127,9 +127,16 @@ body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top > .wp
 	background-color: rgba( 240, 240, 241, 0.06 );
 }
 
+/*
+ * Chevron lives as a header-level sibling (not inside the toggle), so the
+ * visual order is `label | signal | customize | chevron`. The toggle has
+ * `flex: 1` and absorbs the available space, naturally pushing customize and
+ * chevron to the right. `margin-left: 8px` mirrors the spacing the customize
+ * button uses so the two icons sit a consistent gap apart.
+ */
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__chevron {
 	flex: 0 0 auto;
-	margin-left: auto;
+	margin-left: 8px;
 	width: 12px;
 	height: 12px;
 	background: currentColor;

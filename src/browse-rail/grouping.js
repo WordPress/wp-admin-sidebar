@@ -7,9 +7,11 @@
  * siblings of the new group containers.
  *
  * The group render shell follows plan 03-contracts.md § 8: a non-interactive
- * <div> wrapper with two sibling buttons (toggle + optional customize). The
- * customize button only renders for the `plugins` group; the toggle button
- * carries the label, the signal, and the chevron.
+ * <div> wrapper with two sibling buttons (toggle + optional customize) and a
+ * chevron sibling at the end. The customize button only renders for the
+ * `plugins` group; the toggle button carries the label and the signal; the
+ * chevron sits at the right edge as a visual-only indicator (its rotation is
+ * driven by the group's `data-expanded` state in CSS).
  *
  * @package WP_Admin_Sidebar
  */
@@ -231,11 +233,6 @@ function buildGroupContainer( group, customizable ) {
 	signalSpan.classList.add( CLASS_GROUP_SIGNAL );
 	toggle.appendChild( signalSpan );
 
-	const chevron = document.createElement( 'span' );
-	chevron.classList.add( CLASS_GROUP_CHEVRON );
-	chevron.setAttribute( 'aria-hidden', 'true' );
-	toggle.appendChild( chevron );
-
 	header.appendChild( toggle );
 
 	if ( customizable ) {
@@ -248,6 +245,18 @@ function buildGroupContainer( group, customizable ) {
 		customize.disabled = true;
 		header.appendChild( customize );
 	}
+
+	// Chevron lives at the header level (not nested in the toggle button) so the
+	// visual order is `label | signal | customize | chevron`. Nested <button>s
+	// are invalid HTML, so customize cannot live inside the toggle. Restructuring
+	// to chevron-as-sibling lets us land the desired order via DOM order alone.
+	// Click on the chevron is intentionally not wired: it is a visual-only
+	// indicator. The toggle (label + signal) remains the click target for
+	// expand/collapse.
+	const chevron = document.createElement( 'span' );
+	chevron.classList.add( CLASS_GROUP_CHEVRON );
+	chevron.setAttribute( 'aria-hidden', 'true' );
+	header.appendChild( chevron );
 
 	const childrenUl = document.createElement( 'ul' );
 	childrenUl.id = childrenId;

@@ -201,7 +201,7 @@ describe( 'wrapIntoGroups', () => {
 		expect( result.groups ).toHaveLength( 0 );
 	} );
 
-	test( 'group header carries two sibling buttons (toggle + customize) only on plugins', () => {
+	test( 'group header carries toggle, customize, and chevron as siblings in left-to-right order on plugins', () => {
 		appendCoreItem( 'toplevel_page_woocommerce', '/wp-admin/admin.php?page=woocommerce' );
 
 		const navModel = {
@@ -222,12 +222,27 @@ describe( 'wrapIntoGroups', () => {
 		const header = sidebar.querySelector( '.wp-admin-sidebar-group__header' );
 		const toggle = header.querySelector( ':scope > .wp-admin-sidebar-group__toggle' );
 		const customize = header.querySelector( ':scope > .wp-admin-sidebar-group__customize' );
+		const chevron = header.querySelector( ':scope > .wp-admin-sidebar-group__chevron' );
 
-		// Both are direct children of the header (siblings, not nested).
+		// All three are direct children of the header (siblings, not nested).
 		expect( toggle ).not.toBeNull();
 		expect( customize ).not.toBeNull();
+		expect( chevron ).not.toBeNull();
 		expect( toggle.parentElement ).toBe( header );
 		expect( customize.parentElement ).toBe( header );
+		expect( chevron.parentElement ).toBe( header );
+
+		// Chevron is no longer nested inside the toggle button.
+		expect( toggle.querySelector( '.wp-admin-sidebar-group__chevron' ) ).toBeNull();
+
+		// Visual order: toggle → customize → chevron (DES-587).
+		const orderedChildren = Array.from( header.children );
+		expect( orderedChildren.indexOf( toggle ) ).toBe( 0 );
+		expect( orderedChildren.indexOf( customize ) ).toBe( 1 );
+		expect( orderedChildren.indexOf( chevron ) ).toBe( 2 );
+
+		// Chevron is decorative; toggle remains the click target.
+		expect( chevron.getAttribute( 'aria-hidden' ) ).toBe( 'true' );
 
 		// aria-expanded matches the initial collapsed state.
 		expect( toggle.getAttribute( 'aria-expanded' ) ).toBe( 'false' );
