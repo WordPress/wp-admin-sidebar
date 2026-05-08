@@ -60,6 +60,9 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassi
 	flex: 1 1 auto;
 	padding: 0;
 	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable:active,
