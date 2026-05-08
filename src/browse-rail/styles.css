@@ -375,36 +375,45 @@ body.wp-admin-sidebar-pending-delta #adminmenu[data-wp-admin-sidebar-ready="1"] 
 }
 
 /*
- * Folded sidebar (issue #32). When the sidebar collapses — either via
- * "Collapse menu" (body.folded) or auto-fold at narrow viewports
- * (body.auto-fold + the wp-admin media query at 960px) — it narrows to
- * ~36px and labels are hidden. Our group header normally renders three
- * flex siblings (toggle, customize, chevron); three items don't fit in
- * the narrow rail. Hide the toggle (which carries the now-invisible
- * label) and the customize button, then centre the chevron so the
- * group reads as a single icon, matching the dashicon column on core
- * top-level items.
+ * Folded sidebar (issue #32). When the sidebar collapses to icon-only —
+ * either via "Collapse menu" (body.folded) or auto-fold at narrow viewports
+ * (body.auto-fold) — it narrows to ~36px and labels are hidden. Our group
+ * header normally renders three flex siblings (toggle, customize, chevron);
+ * three items don't fit in the narrow rail. Hide the toggle (which carries
+ * the now-invisible label) and the customize button, then centre the
+ * chevron so the group reads as a single icon, matching the dashicon column
+ * on core top-level items.
  *
- * The chevron's existing click delegate (toggle.click()) keeps working,
- * so click-to-expand still toggles inline. A flyout-on-hover pattern
- * matching wp-admin's default for folded top-level items is a future
- * iteration.
+ * Both rule groups are gated to `min-width: 783px` (issue #41). Below that
+ * breakpoint wp-admin renders the sidebar as a full-width drawer with
+ * labels intact, regardless of which body class is set. Without the
+ * min-width gate our rules would still hide the toggle in drawer mode and
+ * leave the user with only a chevron — no readable label, no way to click
+ * customize. The auto-fold block also keeps its existing `max-width: 960px`
+ * ceiling, since auto-fold only narrows the rail in the 783-960px range;
+ * above 960px the body class is still set but the sidebar is full-width.
+ *
+ * The chevron's existing click delegate (toggle.click()) keeps working, so
+ * click-to-expand still toggles inline. A flyout-on-hover pattern matching
+ * wp-admin's default for folded top-level items is a future iteration.
  */
-body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__header {
-	padding: 4px 0;
-	justify-content: center;
+@media only screen and ( min-width: 783px ) {
+	body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__header {
+		padding: 4px 0;
+		justify-content: center;
+	}
+
+	body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__toggle,
+	body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__customize {
+		display: none;
+	}
+
+	body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__chevron {
+		margin-left: 0;
+	}
 }
 
-body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__toggle,
-body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__customize {
-	display: none;
-}
-
-body.wp-admin-sidebar-active.folded .wp-admin-sidebar-group__chevron {
-	margin-left: 0;
-}
-
-@media only screen and ( max-width: 960px ) {
+@media only screen and ( min-width: 783px ) and ( max-width: 960px ) {
 	body.wp-admin-sidebar-active.auto-fold .wp-admin-sidebar-group__header {
 		padding: 4px 0;
 		justify-content: center;
