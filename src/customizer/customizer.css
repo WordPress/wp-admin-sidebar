@@ -147,10 +147,6 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sideba
 	box-shadow: none;
 }
 
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group):hover div.wp-menu-image:before {
-	color: rgba( 240, 246, 252, 0.6 );
-}
-
 /* `.opensub` is added by core's hover-intent JS after a ~200ms delay on
  * mouseenter — it's a JS-driven class, not a CSS pseudo, so the `:hover`
  * overrides above don't reach it. Without this block, hosts that paint
@@ -167,8 +163,20 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sideba
 	box-shadow: none;
 }
 
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group).opensub div.wp-menu-image:before {
-	color: rgba( 240, 246, 252, 0.6 );
+/* Icon (the dashicon glyph rendered via `.wp-menu-image::before`) stays at
+ * its idle color across `:hover`, `.opensub`, and `> a:focus` for inert
+ * rows. DES-605's "no hover/selected paint" rule is read literally — no
+ * soft-graying carve-out. `color: inherit` falls back to the icon
+ * container's idle color rather than overriding to a fixed value, so the
+ * rule is host-portable (vanilla wp-admin, WPCOM, etc. — whatever the
+ * host's idle icon color is, that's what shows). Suppresses, in
+ * particular, WPCOM's
+ * `#adminmenu li a:focus div.wp-menu-image::before, ...:hover ..., ...opensub ...
+ * { color: rgb(114, 174, 230); }` light-blue paint. */
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group):hover div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group).opensub div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group) > a:focus div.wp-menu-image:before {
+	color: inherit;
 }
 
 /* Floating ghost element follows the cursor while dragging. The ghost is a
