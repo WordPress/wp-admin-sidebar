@@ -75,7 +75,7 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__toggle:focus-visible {
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__label {
-	flex: 1 1 auto;
+	flex: 0 1 auto;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -94,7 +94,7 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__signal {
 	width: 8px;
 	height: 8px;
 	padding: 0;
-	margin-left: 6px;
+	margin-left: 0;
 	border-radius: 50%;
 	background: #d63638;
 	font-size: 0;
