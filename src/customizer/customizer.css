@@ -137,6 +137,12 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sideba
 }
 
 body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group):hover {
+	/* `background-color: transparent` matches the non-hover bg and beats host
+	 * stylesheets (e.g. WPCOM's wp-admin chrome) that paint hover at the LI
+	 * level rather than on the inner `<a>`. Without this, vanilla wp-admin
+	 * looked clean but WPCOM-style hosts surfaced a blue full-row hover bg
+	 * over rows that should be visually inert in customize mode. */
+	background-color: transparent;
 	color: #f0f0f1;
 	box-shadow: none;
 }
@@ -258,6 +264,9 @@ li.wp-admin-sidebar-drop-indicator {
  * `.wp-admin-sidebar-item--dragging`.
  */
 body.wp-admin-sidebar-dragging #adminmenu li.menu-top:hover {
+	/* See the equivalent rule under `wp-admin-sidebar-mode-customize` for
+	 * the WPCOM-host LI-level hover-bg leak this guards against. */
+	background-color: transparent;
 	color: #f0f0f1;
 	box-shadow: none;
 }
