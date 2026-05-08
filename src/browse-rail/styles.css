@@ -320,16 +320,17 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-a
  */
 body.wp-admin-sidebar-active .wp-admin-sidebar-item__badge {
 	display: inline-block;
+	box-sizing: border-box;
 	margin-left: 6px;
 	padding: 0 6px;
-	min-width: 16px;
-	height: 16px;
-	border-radius: 8px;
+	min-width: 18px;
+	height: 18px;
+	border-radius: 9px;
 	background: #d63638;
 	color: #fff;
 	font-size: 11px;
 	font-weight: 600;
-	line-height: 16px;
+	line-height: 18px;
 	text-align: center;
 	vertical-align: middle;
 }
