@@ -70,6 +70,41 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassi
 	cursor: grabbing;
 }
 
+/* Reassignable items: suppress anchor hover / opensub / focus paint so the
+ * LI's static `#2c3439` customize-mode bg keeps showing through. Without
+ * this, hosts that paint `#adminmenu li.opensub > a.menu-top` (WPCOM
+ * specifically) leak a blue selection-style bg + a left-edge box-shadow
+ * stripe onto the anchor, making reassignable rows look "selected" on
+ * hover instead of staying inert in their drag-ready state. */
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable.opensub > a,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:focus {
+	background-color: transparent;
+	color: #f0f0f1;
+	box-shadow: none;
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable.opensub div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:focus div.wp-menu-image:before {
+	color: inherit;
+}
+
+/* Right-edge arrow / "submenu opens here" indicator suppression. wp-admin
+ * paints a triangular `::after` on the LI on hover / focus-within for
+ * items that have submenus and aren't current. In customize mode the
+ * flyout is disabled, so the arrow has nothing to point at — it just
+ * leaks visual noise onto inert rows. Suppress for both reassignable
+ * and non-reassignable rows; current-page indicator (`::after` on the
+ * `<a>` for `.wp-has-current-submenu` / `li.current > a.current`) is a
+ * different selector and is preserved. */
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top.wp-has-submenu.wp-not-current-submenu:hover::after,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top.wp-has-submenu.wp-not-current-submenu:focus-within::after,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top.wp-has-submenu.wp-not-current-submenu.opensub::after {
+	display: none;
+	content: none;
+}
+
 body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__grip {
 	flex: 0 0 auto;
 	display: inline-flex;
