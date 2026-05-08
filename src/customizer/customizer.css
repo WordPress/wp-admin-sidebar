@@ -151,6 +151,26 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sideba
 	color: rgba( 240, 246, 252, 0.6 );
 }
 
+/* `.opensub` is added by core's hover-intent JS after a ~200ms delay on
+ * mouseenter — it's a JS-driven class, not a CSS pseudo, so the `:hover`
+ * overrides above don't reach it. Without this block, hosts that paint
+ * `#adminmenu li.opensub > a.menu-top` (notably WPCOM's wp-admin chrome,
+ * which uses that selector for the blue selection-style hover bg) leak
+ * paint onto inert non-reassignable rows after the hover-intent delay.
+ *
+ * This mirrors the equivalent `body.wp-admin-sidebar-dragging
+ * #adminmenu li.menu-top.opensub > a` rule below, scoped instead to
+ * customize mode + non-reassignable + non-group rows. */
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group).opensub > a {
+	background-color: transparent;
+	color: #f0f0f1;
+	box-shadow: none;
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group).opensub div.wp-menu-image:before {
+	color: rgba( 240, 246, 252, 0.6 );
+}
+
 /* Floating ghost element follows the cursor while dragging. The ghost is a
  * shallow clone of the source row so it carries the same grip + dashicon +
  * label as the live row (Figma 3505:75323). Width/height are set inline by
