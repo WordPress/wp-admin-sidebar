@@ -50,9 +50,33 @@ export function applyExpandCollapse( sidebar, navModel, ctx ) {
 				applyState( groupEl, next );
 				stored[ groupId ] = next;
 				writeStoredState( ctx.siteId, stored );
+				notifyMenuHeightChanged();
 			} );
 		}
 	}
+
+	// Initial state above changes the menu height; tell wp-admin to recompute
+	// position once after we settle (issue #43). Without this, if our auto-
+	// expand runs after WP's adminmenu init, the sticky-menu position would
+	// be off by the auto-expanded group's height.
+	notifyMenuHeightChanged();
+}
+
+/**
+ * Trigger wp-admin's sticky-menu recalculation. wp-admin/js/common.js's
+ * setMenuPosition listens on window resize/scroll to keep the sidebar's
+ * vertical position aligned with the visible menu range on long pages.
+ * Toggling our group's data-expanded changes the menu height (the children
+ * UL switches between max-height: 0 and max-height: none) but doesn't
+ * fire either of those events on its own — so without this nudge the
+ * sidebar stays positioned for the old height and a band of empty space
+ * appears at the top.
+ */
+function notifyMenuHeightChanged() {
+	if ( typeof window === 'undefined' ) {
+		return;
+	}
+	window.dispatchEvent( new Event( 'resize' ) );
 }
 
 /**
