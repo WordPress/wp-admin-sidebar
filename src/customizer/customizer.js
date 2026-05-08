@@ -131,6 +131,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 	const detachKeyboard = attachKeyboardReorder( sidebar, controller );
 	const detachMenu = attachMoveMenu( sidebar, navModel, controller );
 	const detachLinkSuppress = suppressReassignableLinkClicks( sidebar );
+	const detachCollapseMenu = disableCollapseMenuFocus();
 
 	const footerEl = renderFooter( sidebar, async function onSave() {
 		await save( options );
@@ -149,7 +150,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 
 	active = {
 		state,
-		detachFns: [ detachDrag, detachKeyboard, detachMenu, detachLinkSuppress ],
+		detachFns: [ detachDrag, detachKeyboard, detachMenu, detachLinkSuppress, detachCollapseMenu ],
 		footerEl,
 		liveEl,
 		beforeunloadHandler,
@@ -326,6 +327,40 @@ function suppressReassignableLinkClicks( sidebar ) {
 	sidebar.addEventListener( 'click', onClickCapture, true );
 	return function detach() {
 		sidebar.removeEventListener( 'click', onClickCapture, true );
+	};
+}
+
+/**
+ * Take the wp-admin "Collapse menu" control out of the keyboard tab order
+ * while customize mode is active. The CSS rule that fades the row + sets
+ * `pointer-events: none` only blocks the mouse — without this the inner
+ * focusable element is still a tab stop and announces as a normal control.
+ * Captures the original tabindex / aria-disabled and returns a detach
+ * function that restores them on exit, so non-customize state is untouched.
+ *
+ * Matches both the legacy `<a>` (older wp-admin) and the modern `<button>`
+ * (wp-admin 6.9+). See DES-579.
+ */
+function disableCollapseMenuFocus() {
+	const target = document.querySelector( '#collapse-menu > a, #collapse-menu > button' );
+	if ( ! target ) {
+		return function detach() {};
+	}
+	const prevTabindex = target.getAttribute( 'tabindex' );
+	const prevAriaDisabled = target.getAttribute( 'aria-disabled' );
+	target.setAttribute( 'tabindex', '-1' );
+	target.setAttribute( 'aria-disabled', 'true' );
+	return function detach() {
+		if ( prevTabindex === null ) {
+			target.removeAttribute( 'tabindex' );
+		} else {
+			target.setAttribute( 'tabindex', prevTabindex );
+		}
+		if ( prevAriaDisabled === null ) {
+			target.removeAttribute( 'aria-disabled' );
+		} else {
+			target.setAttribute( 'aria-disabled', prevAriaDisabled );
+		}
 	};
 }
 
