@@ -7,9 +7,15 @@
  * siblings of the new group containers.
  *
  * The group render shell follows plan 03-contracts.md § 8: a non-interactive
- * <div> wrapper with two sibling buttons (toggle + optional customize). The
- * customize button only renders for the `plugins` group; the toggle button
- * carries the label, the signal, and the chevron.
+ * <div> wrapper with the toggle button, an optional customize button, and a
+ * chevron as siblings. The customize button only renders for the `plugins`
+ * group; the toggle carries the label and the signal. The chevron lives at
+ * the header level (not inside the toggle) because nesting a <button> inside
+ * another <button> is invalid HTML — keeping all three header items as flex
+ * siblings produces the visible LTR order via DOM order alone. Chevron stays
+ * aria-hidden (the toggle remains the sole keyboard/AT target) but delegates
+ * mouse clicks to the toggle so users who click the chevron get the same
+ * expand/collapse behaviour as clicking the label area.
  *
  * @package WP_Admin_Sidebar
  */
@@ -231,11 +237,6 @@ function buildGroupContainer( group, customizable ) {
 	signalSpan.classList.add( CLASS_GROUP_SIGNAL );
 	toggle.appendChild( signalSpan );
 
-	const chevron = document.createElement( 'span' );
-	chevron.classList.add( CLASS_GROUP_CHEVRON );
-	chevron.setAttribute( 'aria-hidden', 'true' );
-	toggle.appendChild( chevron );
-
 	header.appendChild( toggle );
 
 	if ( customizable ) {
@@ -253,6 +254,12 @@ function buildGroupContainer( group, customizable ) {
 		customize.disabled = true;
 		header.appendChild( customize );
 	}
+
+	const chevron = document.createElement( 'span' );
+	chevron.classList.add( CLASS_GROUP_CHEVRON );
+	chevron.setAttribute( 'aria-hidden', 'true' );
+	chevron.addEventListener( 'click', () => toggle.click() );
+	header.appendChild( chevron );
 
 	const childrenUl = document.createElement( 'ul' );
 	childrenUl.id = childrenId;
