@@ -88,10 +88,21 @@ function renderGroupSignal( sidebar, group ) {
 }
 
 /**
- * Render item-level signal (numeric_badge, inline_text, inline_icon) into the
- * item's `<a>` link. count is intentionally not rendered at item level when
- * grouped — group aggregation absorbs it; the individual item shows badge /
- * inline text / inline icon only.
+ * Render item-level signal (numeric_badge / count / badge, inline_text,
+ * inline_icon) into the item's `<a>` link.
+ *
+ * Badge text is chosen by priority — first non-empty wins:
+ *
+ *   1. numeric_badge — primary indicator for plugin items (Sensei, WooCommerce
+ *      pending counts, etc.) carried via awaiting-mod with a digit text.
+ *   2. count         — wp-admin's count-N span pattern (update-plugins,
+ *      menu-counter). Items can fire attention solely via this field
+ *      (Payments, Yoast SEO, WooCommerce updates …); without rendering it
+ *      here, the group's aggregate dot fires but no child shows where the
+ *      attention is coming from (issue #39).
+ *   3. badge         — non-empty awaiting-mod text that didn't parse as a
+ *      digit. Rare in the wild but still triggers attention in PHP
+ *      Sidebar_Signals::map_to_nav, so render it for parity.
  *
  * @param {HTMLUListElement} sidebar
  * @param {Object} item
@@ -105,31 +116,42 @@ function renderItemSignal( sidebar, item ) {
 	if ( ! link ) {
 		return;
 	}
+
+	// Append badges/icons inside `.wp-menu-name` (the label container), not
+	// directly under `<a>`. wp-admin's `.wp-menu-name` is the inline-flow
+	// element that already houses native badges like the "Updates 3" pill;
+	// putting our spans there keeps them on the same line as the label text.
+	// As a sibling of `.wp-menu-name` they would land on a second line in
+	// normal sidebar mode (where `.wp-menu-name` is display: block with
+	// padding-left for the icon column).
+	const target = link.querySelector( ':scope > .wp-menu-name' ) || link;
+
 	// Strip core-emitted signal spans before painting our own. The signal
 	// data was extracted into the nav model in PHP (Sidebar_Signals); leaving
 	// core's markup in place would double-paint the badge / count next to
 	// our own span on items that ship with one of these patterns (WooCommerce
 	// pending counts, plugin-update counters, comment-moderation counts).
 	// Selectors match what extract_raw() reads from.
-	link.querySelectorAll( '.awaiting-mod, .update-plugins, .menu-counter' ).forEach( ( el ) => el.remove() );
+	target.querySelectorAll( '.awaiting-mod, .update-plugins, .menu-counter' ).forEach( ( el ) => el.remove() );
 	const sig = item.signal || {};
 
-	// Numeric badge — primary signal for plugin items (Sensei, WooCommerce
-	// pending counts, etc.). Renders even when the group is collapsed since
-	// the item itself isn't visible in that state, so we layer the badge into
-	// the group-header signal too at aggregation time.
-	const numericBadge = typeof sig.numeric_badge === 'number' && sig.numeric_badge > 0
-		? sig.numeric_badge
-		: null;
-	if ( numericBadge !== null ) {
-		ensureBadge( link, CLASS_ITEM_BADGE, String( numericBadge ) );
+	let badgeText = null;
+	if ( typeof sig.numeric_badge === 'number' && sig.numeric_badge > 0 ) {
+		badgeText = String( sig.numeric_badge );
+	} else if ( typeof sig.count === 'number' && sig.count > 0 ) {
+		badgeText = String( sig.count );
+	} else if ( typeof sig.badge === 'string' && sig.badge.length > 0 ) {
+		badgeText = sig.badge;
+	}
+	if ( badgeText !== null ) {
+		ensureBadge( target, CLASS_ITEM_BADGE, badgeText );
 	}
 
 	if ( typeof sig.inline_text === 'string' && sig.inline_text.length > 0 ) {
-		ensureBadge( link, CLASS_ITEM_INLINE_TEXT, sig.inline_text );
+		ensureBadge( target, CLASS_ITEM_INLINE_TEXT, sig.inline_text );
 	}
 	if ( typeof sig.inline_icon === 'string' && sig.inline_icon.length > 0 ) {
-		ensureIcon( link, CLASS_ITEM_INLINE_ICON, sig.inline_icon );
+		ensureIcon( target, CLASS_ITEM_INLINE_ICON, sig.inline_icon );
 	}
 }
 
