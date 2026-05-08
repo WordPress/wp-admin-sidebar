@@ -149,6 +149,8 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group[data-expanded="true"] .wp-a
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize {
+	/* `position: relative` anchors the ::after tooltip pseudo-element below. */
+	position: relative;
 	flex: 0 0 auto;
 	width: 24px;
 	height: 24px;
@@ -189,6 +191,68 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize::before {
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:focus-visible {
 	outline: 2px solid var( --wp-admin-sidebar-customizer-theme );
 	outline-offset: 2px;
+}
+
+/*
+ * Hover/focus tooltip for the customize button (DES-586). Pure-CSS pseudo-
+ * element so no JS or wp-admin tooltip dependency is needed. Text comes from
+ * the button's `data-tooltip` attribute (set in grouping.js) so it stays
+ * data-driven and translatable from a single source.
+ *
+ * Anchoring strategy: pinned to the right edge of the button (`right: 0`) and
+ * placed above (`bottom: calc(100% + 6px)`). Right-anchoring keeps the
+ * tooltip inside the sidebar regardless of whether the customize icon ends
+ * up middle (post-DES-587) or at the right edge of the header. Above-the-
+ * button avoids pushing into the children list when the group is expanded.
+ *
+ * The tooltip never shows on `:disabled` — the customize button is disabled
+ * during A.1 (before A.2 wires the click handler) and may become disabled at
+ * runtime; suppressing the hint there matches the no-affordance state.
+ */
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize::after {
+	content: attr( data-tooltip );
+	position: absolute;
+	bottom: calc( 100% + 6px );
+	right: 0;
+	padding: 4px 8px;
+	background: var( --wp-admin-sidebar-bg );
+	color: var( --wp-admin-sidebar-item-fg );
+	border: 1px solid rgba( 240, 240, 241, 0.15 );
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: normal;
+	text-transform: none;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	/* Hide path: fade out fast, no delay (immediate dismissal on mouse-leave). */
+	transition: opacity 100ms ease;
+	/* Above ordinary sidebar chrome; the move-menu popup uses 100001 (see
+	 * customizer.css), so 100002 keeps the tooltip readable when the
+	 * surrounding sidebar is already in customize mode. */
+	z-index: 100002;
+}
+
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:hover:not( :disabled )::after,
+body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:focus-visible:not( :disabled )::after {
+	opacity: 1;
+	/* Show path: 250ms hover-delay before fade in, matching standard tooltip
+	 * timing. The asymmetric transitions (this rule for show, base for hide)
+	 * mean dismissal is instant on mouse-leave or blur. */
+	transition: opacity 150ms ease 250ms;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	/* Drop the show-delay and the transition entirely — reduced-motion users
+	 * see the tooltip appear/disappear instantly. Mirrors the chevron rule
+	 * above. */
+	body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize::after,
+	body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:hover:not( :disabled )::after,
+	body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:focus-visible:not( :disabled )::after {
+		transition: none;
+	}
 }
 
 /*
