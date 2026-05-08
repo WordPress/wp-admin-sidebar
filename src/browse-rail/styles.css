@@ -375,6 +375,33 @@ body.wp-admin-sidebar-pending-delta #adminmenu[data-wp-admin-sidebar-ready="1"] 
 }
 
 /*
+ * Plugin-injected separators (issue #25). Some plugins (e.g. WooCommerce
+ * adds `wp-menu-separator woocommerce`) inject their own separator <li> to
+ * demarcate their menu cluster. Once the classifier moves a plugin's items
+ * into the "My Plugins" group, the separator is left behind in its original
+ * DOM position and produces a visible empty gap, often a double-gap when
+ * stacked next to wp-admin's own post-Comments separator.
+ *
+ * Targeted approach: hide only separators that carry a class beyond the
+ * canonical core pair (`wp-not-current-submenu wp-menu-separator`). Heuristic:
+ * `[class*="wp-menu-separator "]` (trailing space) matches when
+ * `wp-menu-separator` is followed by another class, which is the shape
+ * plugins produce (the core class ends the attribute, with no trailing
+ * space). wp-admin's own separators carry only the canonical pair and are
+ * intentionally kept so the native top-level structure (Dashboard / Posts,
+ * post-Comments, pre-Tools) stays intact. Issue #25 picked the targeted
+ * path over whole-cloth hiding for that reason.
+ *
+ * Anchored on `#adminmenu` to match the rest of the file's id-anchored
+ * specificity (see the menu-top hover override above) and gated on
+ * `body.wp-admin-sidebar-active` so the rule is inert when the redesign is
+ * off.
+ */
+body.wp-admin-sidebar-active #adminmenu li[class*="wp-menu-separator "] {
+	display: none;
+}
+
+/*
  * Folded sidebar (issue #32). When the sidebar collapses to icon-only —
  * either via "Collapse menu" (body.folded) or auto-fold at narrow viewports
  * (body.auto-fold) — it narrows to ~36px and labels are hidden. Our group
