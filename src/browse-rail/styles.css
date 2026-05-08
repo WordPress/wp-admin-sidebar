@@ -133,6 +133,28 @@ body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group.menu-top {
 	margin-top: 16px;
 }
 
+/*
+ * Same cascade problem as the background override above (issue #35), but for
+ * icon color. wp-admin ships:
+ *
+ *   #adminmenu li.menu-top:hover .wp-menu-image::before { color: #72aee6; }
+ *
+ * Our group LI carries .menu-top, so hovering the header matches that rule
+ * and the descendant selector paints every child item's icon blue —
+ * including children the user isn't actually pointing at. Reset the icon
+ * colour for non-hovered children so the hover effect only applies to the
+ * specific row the user is targeting.
+ *
+ * The literal rgba(240,240,241,0.6) matches wp-admin's default dashicon
+ * idle colour in the dark colour scheme. We're explicitly within the
+ * "Phase 1 ships against the WP default dark admin colour scheme only"
+ * scope flagged at the top of this file; light/midnight/etc. schemes are
+ * Phase-1.1 work and will need this value tokenised.
+ */
+body.wp-admin-sidebar-active #adminmenu li.wp-admin-sidebar-group:hover .wp-admin-sidebar-group__children li.menu-top:not( :hover ) .wp-menu-image::before {
+	color: rgba( 240, 240, 241, 0.6 );
+}
+
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__chevron {
 	flex: 0 0 auto;
 	margin-left: 4px;
