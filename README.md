@@ -77,4 +77,4 @@ Bug reports, design feedback, and host-adapter questions all welcome.
 
 ## Maintainers
 
-See [`MAINTAINERS.md`](MAINTAINERS.md). Initial maintainer set: Christos Koumenides ([@chriskmnds](https://github.com/chriskmnds)) and Lucas Mendes ([@lucasmdo](https://github.com/lucasmdo)).
+See [`MAINTAINERS.md`](MAINTAINERS.md). Initial maintainer set: [@chriskmnds](https://github.com/chriskmnds) and [@lucasmdo](https://github.com/lucasmdo).
