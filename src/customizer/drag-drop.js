@@ -155,18 +155,24 @@ export function attachDragDrop( sidebar, controller ) {
 			if ( li.classList.contains( 'wp-admin-sidebar-group' ) ) {
 				const childList = li.querySelector( ':scope > .wp-admin-sidebar-group__children' );
 				if ( ! childList ) continue;
-				if ( li.getAttribute( 'data-expanded' ) !== 'true' ) {
+				const groupId = li.getAttribute( 'data-group' );
+				if ( ! groupId ) continue;
+				const isExpanded = li.getAttribute( 'data-expanded' ) === 'true';
+				const isEmpty = childList.querySelectorAll( ':scope > li' ).length === 0;
+				if ( ! isExpanded || isEmpty ) {
 					// Drop on a collapsed group header → land at the end of that
-					// group. We don't auto-expand on hover in v1; keyboard +
-					// move-to menu cover that path explicitly.
-					const groupId = li.getAttribute( 'data-group' );
-					if ( groupId ) {
-						return {
-							container: childList,
-							beforeLi: null,
-							position: { kind: 'in_group', group_id: groupId, index: childList.children.length },
-						};
-					}
+					// group. Also handles the expanded-but-empty case: once the
+					// user has reassigned every item out of a group, the group's
+					// children-UL has zero content and the header is the only
+					// hit-target — without this branch the user could never re-
+					// add items to an emptied group via drag-drop. (Move-menu
+					// already covers this path because it treats the group LI
+					// as a one-step row target regardless of expand state.)
+					return {
+						container: childList,
+						beforeLi: null,
+						position: { kind: 'in_group', group_id: groupId, index: childList.children.length },
+					};
 				}
 				continue;
 			}
