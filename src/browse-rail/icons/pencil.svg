@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Pencil icon, lifted from @wordpress/icons (library/pencil.js, 24x24). Used as
+  the customizer-mode entry-point icon on the plugins group header. When
+  loaded via CSS `mask`, only the alpha channel matters; the visible color
+  comes from `background: currentColor` on the host element.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+	<path d="m19 7-3-3-8.5 8.5-1 4 4-1L19 7Zm-7 11.5H5V20h7v-1.5Z"/>
+</svg>
