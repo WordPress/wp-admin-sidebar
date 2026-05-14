@@ -198,6 +198,25 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sideba
 	box-shadow: none;
 }
 
+/*
+ * Group collapse is locked while customize mode is active (issue #55):
+ * the toggle <button> carries the native `:disabled` state (set by
+ * expandGroupsForCustomizing in customizer.js), and the chevron — which
+ * forwards clicks via `toggle.click()` and is a no-op against a disabled
+ * button — gets a matching visual cue so users can see the affordance is
+ * inactive. The reduced opacity mirrors the existing `.wp-admin-sidebar-
+ * group__customize:disabled` treatment in browse-rail/styles.css.
+ */
+body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-group--reorder-locked .wp-admin-sidebar-group__toggle {
+	cursor: not-allowed;
+}
+
+body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-group--reorder-locked .wp-admin-sidebar-group__chevron {
+	cursor: not-allowed;
+	opacity: 0.4;
+	pointer-events: none;
+}
+
 /* Icon (the dashicon glyph rendered via `.wp-menu-image::before`) stays at
  * its idle color across `:hover`, `.opensub`, and `> a:focus` for inert
  * rows. DES-605's "no hover/selected paint" rule is read literally — no

@@ -25,6 +25,10 @@ const REASSIGNABLE_CLASS = 'wp-admin-sidebar-item--reassignable';
 const GRIP_CLASS = 'wp-admin-sidebar-item__grip';
 const FOOTER_CLASS = 'wp-admin-sidebar-customize-footer';
 const ANNOUNCE_ID = 'wp-admin-sidebar-customize-live';
+// Marker on group <li>s whose collapse toggle is locked for the duration
+// of a customize session. Drives the not-allowed cursor + dimmed chevron
+// styling in customizer.css. See expandGroupsForCustomizing() (issue #55).
+const GROUP_LOCKED_CLASS = 'wp-admin-sidebar-group--reorder-locked';
 
 let active = null; // { state, detachFns, footerEl, liveEl, beforeunloadHandler }
 
@@ -375,7 +379,7 @@ function disableCollapseMenuFocus() {
  * be reordering.
  */
 function expandGroupsForCustomizing( sidebar ) {
-	/** @type {Array<{toggle: HTMLElement, prevExpanded: string|null}>} */
+	/** @type {Array<{toggle: HTMLButtonElement, group: HTMLElement, prevExpanded: string|null}>} */
 	const restorers = [];
 	const groups = sidebar.querySelectorAll( 'li.wp-admin-sidebar-group' );
 	for ( const group of groups ) {
@@ -384,19 +388,31 @@ function expandGroupsForCustomizing( sidebar ) {
 			continue;
 		}
 		const toggle = group.querySelector( ':scope > .wp-admin-sidebar-group__header > .wp-admin-sidebar-group__toggle' );
-		if ( ! toggle ) {
+		if ( ! ( toggle instanceof HTMLButtonElement ) ) {
 			continue;
 		}
 		const prevExpanded = group.getAttribute( 'data-expanded' );
 		if ( prevExpanded !== 'true' ) {
 			toggle.click();
 		}
-		restorers.push( { toggle, prevExpanded } );
+		// Lock collapse for the duration of the customize session (issue #55).
+		// Disabling the <button> stops mouse + keyboard activation natively;
+		// the chevron <span> forwards its click via `toggle.click()`, which is
+		// a no-op on a disabled button — so the chevron is neutralised for
+		// free. The marker class drives a `cursor: not-allowed` + dimmed
+		// opacity rule in customizer.css so users get a clear visual cue.
+		toggle.disabled = true;
+		group.classList.add( GROUP_LOCKED_CLASS );
+		restorers.push( { toggle, group, prevExpanded } );
 	}
 	return function restore() {
-		for ( const { toggle, prevExpanded } of restorers ) {
-			const group = toggle.closest( 'li.wp-admin-sidebar-group' );
-			if ( ! group ) continue;
+		for ( const { toggle, group, prevExpanded } of restorers ) {
+			// Re-enable BEFORE attempting the restorer click — click() is a
+			// no-op on disabled buttons and would otherwise strand the group
+			// in its force-expanded state.
+			toggle.disabled = false;
+			group.classList.remove( GROUP_LOCKED_CLASS );
+			if ( ! group.isConnected ) continue;
 			const nowExpanded = group.getAttribute( 'data-expanded' ) === 'true';
 			const wasExpanded = prevExpanded === 'true';
 			if ( nowExpanded !== wasExpanded ) {
