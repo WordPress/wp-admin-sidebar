@@ -3,11 +3,15 @@
  *
  * Behaviour:
  *
- *   - Default: every group is collapsed.
+ *   - Default: the `plugins` group starts expanded on first encounter so users
+ *     immediately see what the grouping contains (issue #57); every other
+ *     group defaults to collapsed.
  *   - Auto-expand: the group whose children include the current URL's item
  *     starts expanded, regardless of stored state.
  *   - Persistence: per-group expanded / collapsed state survives navigation
  *     within the same browser tab via sessionStorage. New tab → no carry-over.
+ *     A user-driven collapse of `plugins` is honored on subsequent paints in
+ *     the same tab.
  *
  * sessionStorage shape (keyed per site so multi-blog admins don't collide):
  *
@@ -85,7 +89,8 @@ function notifyMenuHeightChanged() {
  *   - If it's the auto-expand group (current URL is one of its children),
  *     expand regardless of stored state.
  *   - Else, if storage records a state for it, follow that.
- *   - Else, default to collapsed.
+ *   - Else, default to expanded for `plugins` and collapsed for everything
+ *     else (issue #57).
  *
  * @param {string} groupId
  * @param {Record<string, boolean>} stored
@@ -99,7 +104,7 @@ function decideInitialState( groupId, stored, autoExpandGroup ) {
 	if ( Object.prototype.hasOwnProperty.call( stored, groupId ) ) {
 		return !! stored[ groupId ];
 	}
-	return false;
+	return groupId === 'plugins';
 }
 
 /**
