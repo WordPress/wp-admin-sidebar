@@ -113,10 +113,11 @@ export async function bootstrap() {
 	}
 
 	const bust = resolveBust();
-	const [ grouping, signal, expandCollapse ] = await Promise.all( [
+	const [ grouping, signal, expandCollapse, colorSchemePreview ] = await Promise.all( [
 		import( `./grouping.js?ver=${ bust }` ),
 		import( `./signal.js?ver=${ bust }` ),
 		import( `./expand-collapse.js?ver=${ bust }` ),
+		import( `./color-scheme-preview.js?ver=${ bust }` ),
 	] );
 
 	const { navModel, layoutDelta, meta } = data;
@@ -147,6 +148,11 @@ export async function bootstrap() {
 
 	sidebar.dataset.wpAdminSidebarReady = '1';
 	document.body.classList.add( 'wp-admin-sidebar-active' );
+
+	// Live-preview the admin colour scheme on Profile / Edit User screens
+	// so our per-scheme accent tokens follow the colour-picker preview
+	// instead of staying stuck on the saved scheme. No-ops elsewhere.
+	colorSchemePreview.applyColorSchemePreview();
 
 	// Phase 4: customizer entry. Each group's customize button dynamically
 	// loads the customizer chunk on first click; the customizer module owns

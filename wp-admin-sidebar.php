@@ -140,6 +140,7 @@ add_action(
 			WP_ADMIN_SIDEBAR_DIR . 'src/browse-rail/grouping.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/browse-rail/signal.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/browse-rail/expand-collapse.js',
+			WP_ADMIN_SIDEBAR_DIR . 'src/browse-rail/color-scheme-preview.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/customizer.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/draft-state.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/drag-drop.js',
