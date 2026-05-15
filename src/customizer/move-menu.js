@@ -61,6 +61,27 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		}
 	}
 
+	// Dismiss the open menu the instant the user starts a drag (or any other
+	// pointer-down outside the menu / trigger). The `click`-phase handler
+	// above only fires on a full click — by then a press-and-hold drag has
+	// already taken hold of a row, so the floating menu stays anchored at
+	// its `position: fixed` coordinates while the row moves out from under
+	// it. Listening on `pointerdown` in the capture phase fires before
+	// drag-drop.js's own `pointerdown` handler on the sidebar, so we close
+	// the menu first and let the drag start cleanly.
+	function onPointerDown( ev ) {
+		if ( ! openMenu ) {
+			return;
+		}
+		if ( ! ( ev.target instanceof Element ) ) {
+			return;
+		}
+		if ( ev.target.closest( '.' + MENU_CLASS ) || ev.target.closest( '.' + TRIGGER_CLASS ) ) {
+			return;
+		}
+		closeMenu();
+	}
+
 	function openFor( li, trigger ) {
 		const itemId = li.getAttribute( 'data-wp-admin-sidebar-item-id' );
 		if ( ! itemId ) return;
@@ -290,11 +311,13 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 	}
 
 	document.addEventListener( 'click', onClick, true );
+	document.addEventListener( 'pointerdown', onPointerDown, true );
 	document.addEventListener( 'keydown', onKeyDown );
 
 	return function detach() {
 		closeMenu();
 		document.removeEventListener( 'click', onClick, true );
+		document.removeEventListener( 'pointerdown', onPointerDown, true );
 		document.removeEventListener( 'keydown', onKeyDown );
 		const triggers = sidebar.querySelectorAll( '.' + TRIGGER_CLASS );
 		for ( const t of triggers ) {
