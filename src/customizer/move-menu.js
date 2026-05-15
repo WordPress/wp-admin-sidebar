@@ -2,9 +2,16 @@
  * "Move to" menu — the only keyboard path for cross-container moves.
  *
  * Renders a 3-dot trigger on each reassignable item; clicking opens a small
- * popup with: Move up, Move down, Move to group: …, Move to top level,
- * Reset to default. Group choices are derived from the active nav model so
- * future groups appear automatically.
+ * popup with: Move up, Move down, Move to top level (when the item is
+ * inside a group), Reset to default.
+ *
+ * "Move to <group>" entries were removed in issue #60: testers couldn't
+ * differentiate them from "Reset to default" — both actions returned a
+ * top-level item back into its baseline group, which made them read as
+ * duplicates. Cross-group moves remain available via drag (DES-647 tracks
+ * making more items draggable too). If multi-group support lands later
+ * with a clearer affordance, this is the place to bring keyboard cross-
+ * group moves back.
  *
  * Contract reference: plan 04-interaction-spec.md (move-to menu)
  * and plan 03-contracts.md § 6 (Allowed destinations).
@@ -68,7 +75,6 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		menu.className = MENU_CLASS;
 		menu.setAttribute( 'role', 'menu' );
 
-		const groupIds = ( navModel.groups || [] ).map( ( g ) => g.id );
 		const currentContainer = li.parentElement;
 		const inGroup = currentContainer ? currentContainer.closest( 'li.wp-admin-sidebar-group' ) : null;
 		const currentGroupId = inGroup ? inGroup.getAttribute( 'data-group' ) : null;
@@ -76,13 +82,6 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		const choices = [];
 		choices.push( { label: 'Move up', action: () => commit( -1 ) } );
 		choices.push( { label: 'Move down', action: () => commit( 1 ) } );
-		for ( const gid of groupIds ) {
-			if ( gid === currentGroupId ) continue;
-			choices.push( {
-				label: `Move to ${ gid }`,
-				action: () => crossMove( { kind: 'in_group', group_id: gid, index: 0 } ),
-			} );
-		}
 		if ( currentGroupId !== null ) {
 			choices.push( {
 				label: 'Move to top level',
