@@ -17,7 +17,7 @@ It is built incrementally on top of wp-admin: plain ES modules, no React, no Gut
 
 This is **v0.1.x — early prototype, public from day 1**. Inspired by Matt Mullenweg's ["Rethinking left navigation"](https://make.wordpress.org/core/2026/03/24/rethinking-left-navigation/) Make/Core post and the WordPress design teams' explorations.
 
-The plugin is functional and shipping behind a sticker on a subset of WordPress.com sites. The public-installable plugin shape is what this repo is for. See [`docs/roadmap.md`](docs/roadmap.md) for what's locked, what's open, and what's next.
+The plugin is functional and in early production use. The public-installable plugin shape is what this repo is for. See [`docs/roadmap.md`](docs/roadmap.md) for what's locked, what's open, and what's next.
 
 ## Try it
 
@@ -39,7 +39,7 @@ To install on your own WordPress site:
 - **Grouping.** Plugin-added top-level menu items get classified into a curated **Plugins** group at the bottom of the sidebar. Core items (Dashboard, Posts, Media, Pages, Comments, Appearance, Plugins, Users, Tools, Settings) keep their core positions. The classification is data-driven by a registry of common wp.org plugins (see [`src/registry.php`](src/registry.php)) plus a fall-through rule for everything else.
 - **Per-user reorder.** Click the customize button next to a group to enter customizer mode. Drag any item, use keyboard reordering (arrows after focusing the grip), or use the **Move to** menu (3-dot trigger). Save persists the layout in `user_meta` for the current site.
 - **Reset to default.** Customizer's "Reset to default" returns an item to its baseline group + position from the classifier.
-- **Per-site, per-user.** Each user's saved layouts are scoped per site — a multi-site network or WordPress.com user with several sites gets independent layouts.
+- **Per-site, per-user.** Each user's saved layouts are scoped per site — a multisite network or a user with several sites gets independent layouts.
 - **No core changes.** The plugin runs entirely as a wp-admin overlay: it reads `$menu`/`$submenu`, classifies, then reorders DOM nodes client-side with the server's pre-classified data block.
 - **Accessibility.** Keyboard-navigable end-to-end (tab, focus visible, screen-reader live region for moves). WCAG AA conformance is the README-promised target.
 - **Performance.** Browse-rail bundle ≤ 12 KB gzipped (CI gate). Customizer bundle ≤ 60 KB. Plain ES modules, no build step, no React. The classifier runs once per admin request (`in_admin_header` priority 1) and is short-circuited when the gate is off — non-opted-in users see no overhead beyond a sub-millisecond filter check.
@@ -55,9 +55,10 @@ For prior art and how this plugin relates to other community efforts: [`docs/rel
 | Phase | What | Status |
 |---|---|---|
 | **v0.1.x** | Public scaffold, in-the-open development, early adopters | active (now) |
-| **v0.2.x** | Stable host-adapter API, WordPress.com vendor cutover, Make/Core announcement, Reddit launch | next |
+| **v0.2.x** | Stable host-adapter API, Make/Core announcement, Reddit launch | next |
 | **v0.3.x** | Submission to wordpress.org plugin directory, percentage-rollout on WordPress.com | following |
 | **v1.0** | API stability promise, deprecation policy locked, broader rollout | when public extension API has soaked |
+| **v2** | Full-sidebar personalization: reorder/move any item, broader ordering, built-in "More" group | gated by design + community signal |
 | **future** | Make/Core proposal for upstream — what core could adopt from the prototype | gated by community signal |
 
 See [`docs/roadmap.md`](docs/roadmap.md) for milestone-by-milestone detail.

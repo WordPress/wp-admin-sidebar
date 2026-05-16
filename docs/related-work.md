@@ -53,7 +53,7 @@ Compared to the prior-art designs, this plugin's posture is:
 ## Other reference implementations and ecosystem
 
 - **WordPress Desktop Mode** — [`github.com/WordPress/desktop-mode`](https://github.com/WordPress/desktop-mode). The shape we modeled this plugin's contribution model on: doesn't change Core, fully reverts on deactivation, lives under the WordPress GitHub org. (Desktop-mode adds a per-user opt-in via an admin-bar toggle; we kept the install-is-the-opt-in default for v0.1.x and track the deliberate per-user surface in [issue #16](https://github.com/WordPress/wp-admin-sidebar/issues/16).)
-- **WordPress.com sidebar redesign rollout** — the WordPress.com team is shipping this same code as a managed-WordPress experience. The WordPress.com integration mu-plugin (`wp-admin-sidebar-integration`) consumes this plugin's filter API to add WordPress.com's sticker-based gating, user-attribute-backed storage, and Atomic-cache-flush behaviour. Other managed-WordPress hosts can follow the same pattern.
+- **Managed-WordPress host rollouts** — a managed-WordPress host can ship this same code as a built-in experience by binding the plugin's filter API from a host adapter (gating, storage backend, cache integration). This is the intended integration path for any host; see [`docs/host-extension-api.md`](host-extension-api.md).
 
 ## Conversation channels
 
