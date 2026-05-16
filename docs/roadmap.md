@@ -55,6 +55,20 @@ The WordPress.com version of this plugin migrates from its in-tree mu-plugin for
 
 **Exit criteria:** plugin has had a sustained period of stable rollout (≥ 1 month at 100% on a large managed-WordPress host, plus active in the wp.org plugin directory), no open critical issues, host adapters in use beyond just WordPress.com (or the API is deemed ready regardless).
 
+## v2 — full-sidebar personalization
+
+**Gated by design sign-off + community signal.** v0.1 through v1.0 deliberately scope reorder to plugin-added items inside the curated Plugins group. The May 2026 usability round (3 testers) and the Reddit launch thread independently asked for the whole sidebar to be personalizable, not just the Plugins group. v2 is where that scope expansion is evaluated and, if the design holds up, delivered.
+
+**Candidate scope:**
+
+- Reorder or move *any* sidebar item, not only plugin-added ones ([#68](https://github.com/WordPress/wp-admin-sidebar/issues/68)).
+- Broader ordering options: alphabetical, per-user custom, scoped vs. global ([#14](https://github.com/WordPress/wp-admin-sidebar/issues/14)).
+- One built-in, user-managed "More" group as a lower-priority destination, with no arbitrary user-defined groups yet ([#13](https://github.com/WordPress/wp-admin-sidebar/issues/13)).
+
+**Why it's gated, not committed.** Core item positions are load-bearing: wp-admin internals, plugins, documentation, and screenshots assume them. Making them user-movable needs a design pass plus stable identifiers for core items, an all-items "reset to default", and a persistence model that extends beyond today's plugin-slug keys. The stored layout contract already supports arbitrary placement, so this is a UI-scope and design decision, not a storage migration.
+
+**Exit criteria:** design sign-off on the full-sidebar interaction and reset model; the three tracked issues resolved or explicitly descoped; no regression to the default (unconfigured) sidebar, which still preserves core positions.
+
 ## Future — Make/Core proposal
 
 **Gated by community signal.** If the plugin gains traction in the public WordPress space (real users, not just A8C-internal), we open a Make/Core proposal extracting the core-portable parts:
@@ -72,12 +86,13 @@ We deliberately don't have plans for:
 - **A radical IA reimagining** (Joen / Kelly / James are exploring those; we stay incremental and complementary).
 - **A React or Gutenberg-component rewrite** (the sidenav is a "sprinkle of JS on top of server rendering" surface — we keep it that way for the foreseeable future, per Sergio Gomes' guidance and our own perf budgets).
 - **Mobile-specific sidebar UI** (out of scope until a separate design pass; the current sidebar inherits wp-admin's mobile behavior unchanged).
-- **Vertical-tabs / collapsing core items** (the core's natural positions are sacred; only plugin items get reorganized).
+- **A vertical-tabs / collapsed-core information architecture** (we won't restructure core into a different IA, and the default sidebar never moves or hides core items on the user's behalf). Note: *user-initiated* full-sidebar personalization is a different thing, and is no longer a non-goal. It is now tracked as the gated **v2 — full-sidebar personalization** milestone above.
 
 If you want to argue any of these on, open a Discussion. We listen.
 
 ## Tracking
 
+- **GitHub Milestones**: the version phases above map to GitHub Milestones on this repo. `v0.3 — wp.org submission + rollout hardening` and `v2 — full-sidebar personalization` are open; issues are filed against them as scope firms up.
 - **Public roadmap board**: GitHub Projects (V2) — columns mirror the milestones above.
 - **Internal coordination**: Linear DES-* project (private, A8C-internal) tracks WordPress.com rollout-specific items.
 - **Public docs**: this file is authoritative for milestone scope; PRs that reshape the roadmap touch this file.

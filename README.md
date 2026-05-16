@@ -58,6 +58,7 @@ For prior art and how this plugin relates to other community efforts: [`docs/rel
 | **v0.2.x** | Stable host-adapter API, WordPress.com vendor cutover, Make/Core announcement, Reddit launch | next |
 | **v0.3.x** | Submission to wordpress.org plugin directory, percentage-rollout on WordPress.com | following |
 | **v1.0** | API stability promise, deprecation policy locked, broader rollout | when public extension API has soaked |
+| **v2** | Full-sidebar personalization: reorder/move any item, broader ordering, built-in "More" group | gated by design + community signal |
 | **future** | Make/Core proposal for upstream — what core could adopt from the prototype | gated by community signal |
 
 See [`docs/roadmap.md`](docs/roadmap.md) for milestone-by-milestone detail.
