@@ -23,9 +23,14 @@ describe( 'decideInitialState', () => {
 		expect( decideInitialState( 'plugins', { plugins: false }, null ) ).toBe( false );
 	} );
 
-	test( 'defaults to collapsed (false) when nothing matches', () => {
-		expect( decideInitialState( 'plugins', {}, null ) ).toBe( false );
+	test( 'defaults to expanded for `plugins` and collapsed otherwise when nothing matches', () => {
+		expect( decideInitialState( 'plugins', {}, null ) ).toBe( true );
+		expect( decideInitialState( 'tools', {}, null ) ).toBe( false );
 		expect( decideInitialState( 'tools', { plugins: true }, 'plugins' ) ).toBe( false );
+	} );
+
+	test( 'stored collapsed state for `plugins` overrides the default-expand', () => {
+		expect( decideInitialState( 'plugins', { plugins: false }, null ) ).toBe( false );
 	} );
 } );
 
@@ -106,16 +111,17 @@ describe( 'applyExpandCollapse — sessionStorage round-trip', () => {
 
 		applyExpandCollapse( sidebar, navModel, { currentUrl: '/wp-admin/edit.php', siteId: 42 } );
 
-		// Default collapsed, nothing in storage.
-		expect( groupEl.getAttribute( 'data-expanded' ) ).toBe( 'false' );
-
-		// Click to expand.
-		groupEl.querySelector( '.wp-admin-sidebar-group__toggle' ).click();
+		// `plugins` defaults to expanded; nothing in storage yet.
 		expect( groupEl.getAttribute( 'data-expanded' ) ).toBe( 'true' );
+		expect( window.sessionStorage.getItem( 'wp-admin-sidebar:groups:42' ) ).toBeNull();
+
+		// Click to collapse.
+		groupEl.querySelector( '.wp-admin-sidebar-group__toggle' ).click();
+		expect( groupEl.getAttribute( 'data-expanded' ) ).toBe( 'false' );
 
 		// Storage carries the new state, scoped per site.
 		const stored = JSON.parse( window.sessionStorage.getItem( 'wp-admin-sidebar:groups:42' ) );
-		expect( stored ).toEqual( { plugins: true } );
+		expect( stored ).toEqual( { plugins: false } );
 	} );
 
 	test( 'auto-expand wins over stored collapsed state', () => {
@@ -146,14 +152,14 @@ describe( 'applyExpandCollapse — sessionStorage round-trip', () => {
 		const { sidebar } = buildSidebarWithGroup( 'plugins' );
 		const navModel = { groups: [ { id: 'plugins', children: [] } ], top_level: [] };
 
-		// Site 1: expand.
+		// Site 1: toggle the (default-expanded) plugins group to collapse it.
 		applyExpandCollapse( sidebar, navModel, { currentUrl: '/wp-admin/edit.php', siteId: 1 } );
 		sidebar.querySelector( '.wp-admin-sidebar-group__toggle' ).click();
 
 		// Site 2: should not see Site 1's state.
 		const site2 = JSON.parse( window.sessionStorage.getItem( 'wp-admin-sidebar:groups:2' ) || 'null' );
 		const site1 = JSON.parse( window.sessionStorage.getItem( 'wp-admin-sidebar:groups:1' ) );
-		expect( site1 ).toEqual( { plugins: true } );
+		expect( site1 ).toEqual( { plugins: false } );
 		expect( site2 ).toBeNull();
 	} );
 } );
