@@ -43,6 +43,7 @@
 const TOKEN_GROUP_LABEL = '--wp-admin-sidebar-group-label-fg';
 const TOKEN_CUSTOMIZER  = '--wp-admin-sidebar-customizer-theme';
 const COLORS_LINK_ID    = 'colors-css';
+const SYNC_FALLBACK_DELAYS = [ 100, 500, 1000 ];
 
 /**
  * Wire scheme accent extraction and live-preview tracking.
@@ -58,9 +59,9 @@ export function applyColorSchemePreview() {
 		return;
 	}
 
-	// Watch the colour-picker's href swap. `load` covers slow uncached
-	// stylesheets; the timeout fallback covers cached swaps where the event
-	// may not fire on the link element. Both paths are idempotent.
+	// Watch the colour-picker's href swap. `load` covers uncached stylesheets
+	// when it fires; delayed fallbacks cover cached swaps and missed load
+	// events. All paths are idempotent.
 	const observer = new MutationObserver( () => syncAccentAfterStylesheetSwap( colorsLink ) );
 	observer.observe( colorsLink, { attributes: true, attributeFilter: [ 'href' ] } );
 }
@@ -72,7 +73,7 @@ export function applyColorSchemePreview() {
  */
 function syncAccentAfterStylesheetSwap( colorsLink ) {
 	colorsLink.addEventListener( 'load', syncAccentFromNative, { once: true } );
-	setTimeout( syncAccentFromNative, 100 );
+	SYNC_FALLBACK_DELAYS.forEach( ( delay ) => setTimeout( syncAccentFromNative, delay ) );
 }
 
 /**
