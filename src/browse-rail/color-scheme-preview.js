@@ -26,9 +26,10 @@
  * `<link id="colors-css">` href when the user clicks any scheme
  * option (radio click, label click, swatch click — all funnel through
  * the same href swap). A `MutationObserver` on that link's `href`
- * attribute catches every variant. After the new stylesheet's `load`
- * event fires we re-probe and update the tokens — works regardless of
- * which DOM target the user clicked.
+ * attribute catches every variant. We re-probe after the new stylesheet's
+ * `load` event when it fires, with a short timeout fallback for cached
+ * stylesheets, so the tokens update regardless of which DOM target the
+ * user clicked.
  *
  * Listening to the radios' `change` event alone (an earlier attempt)
  * was unreliable because WP's `color-picker.js` sets `radio.prop(
@@ -57,17 +58,21 @@ export function applyColorSchemePreview() {
 		return;
 	}
 
-	// Watch the colour-picker's href swap and re-sync after the browser
-	// has had a chance to apply the new stylesheet. A small setTimeout
-	// is more reliable than `link.load` because `load` doesn't fire on
-	// the link element when the swapped-in stylesheet is already in the
-	// HTTP cache (a common case once the user has previewed a scheme
-	// once). The resync is idempotent — runs more often than strictly
-	// needed in fast-path cases, but writes the same value either way.
-	const observer = new MutationObserver( () => {
-		setTimeout( syncAccentFromNative, 100 );
-	} );
+	// Watch the colour-picker's href swap. `load` covers slow uncached
+	// stylesheets; the timeout fallback covers cached swaps where the event
+	// may not fire on the link element. Both paths are idempotent.
+	const observer = new MutationObserver( () => syncAccentAfterStylesheetSwap( colorsLink ) );
 	observer.observe( colorsLink, { attributes: true, attributeFilter: [ 'href' ] } );
+}
+
+/**
+ * Schedule accent re-syncs after a colour stylesheet href swap.
+ *
+ * @param {HTMLLinkElement} colorsLink
+ */
+function syncAccentAfterStylesheetSwap( colorsLink ) {
+	colorsLink.addEventListener( 'load', syncAccentFromNative, { once: true } );
+	setTimeout( syncAccentFromNative, 100 );
 }
 
 /**

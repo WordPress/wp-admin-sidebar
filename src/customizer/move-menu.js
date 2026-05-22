@@ -106,7 +106,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		if ( currentGroupId !== null ) {
 			choices.push( {
 				label: 'Move to top level',
-				action: () => crossMove( { kind: 'top_level', index: 0 } ),
+				action: moveToTopLevel,
 			} );
 		}
 		choices.push( {
@@ -227,26 +227,11 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 			trigger.focus();
 		}
 
-		function crossMove( position ) {
-			let target;
-			if ( position.kind === 'in_group' ) {
-				const groupContainer = sidebar.querySelector(
-					`li.wp-admin-sidebar-group[data-group="${ position.group_id }"] > .wp-admin-sidebar-group__children`
-				);
-				if ( ! groupContainer ) {
-					closeMenu();
-					return;
-				}
-				target = groupContainer;
-				groupContainer.insertBefore( li, groupContainer.firstElementChild );
-			} else {
-				target = sidebar;
-				sidebar.insertBefore( li, sidebar.firstElementChild );
-			}
+		function moveToTopLevel() {
+			const position = { kind: 'top_level', index: 0 };
+			sidebar.insertBefore( li, sidebar.firstElementChild );
 			controller.commitMove( itemId, position );
-			controller.announce(
-				`Moved ${ trim( li ) } to ${ position.kind === 'in_group' ? position.group_id : 'top level' }.`
-			);
+			controller.announce( `Moved ${ trim( li ) } to top level.` );
 			closeMenu();
 			trigger.focus();
 		}
