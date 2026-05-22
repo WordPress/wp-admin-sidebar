@@ -215,12 +215,13 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize::before {
 	width: 20px;
 	height: 20px;
 	background: currentColor;
-	/* Lucas's list-view icon (Figma 3505:74996). Loaded as an external SVG so
-	 * the path stays editable as real markup, not a URL-encoded data URI. The
-	 * mask uses the SVG's alpha channel; visible color comes from `background:
-	 * currentColor` above so the icon inherits the group label color. */
-	mask: url( "icons/list-view.svg" ) no-repeat center / contain;
-	-webkit-mask: url( "icons/list-view.svg" ) no-repeat center / contain;
+	/* Pencil icon from @wordpress/icons (issue #56). Loaded as an external SVG
+	 * so the path stays editable as real markup, not a URL-encoded data URI.
+	 * The mask uses the SVG's alpha channel; visible color comes from
+	 * `background: currentColor` above so the icon inherits the group label
+	 * color. */
+	mask: url( "icons/pencil.svg" ) no-repeat center / contain;
+	-webkit-mask: url( "icons/pencil.svg" ) no-repeat center / contain;
 }
 
 body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:focus-visible {
@@ -234,11 +235,10 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize:focus-visible {
  * the button's `data-tooltip` attribute (set in grouping.js) so it stays
  * data-driven and translatable from a single source.
  *
- * Anchoring strategy: pinned to the right edge of the button (`right: 0`) and
- * placed above (`bottom: calc(100% + 6px)`). Right-anchoring keeps the
- * tooltip inside the sidebar regardless of whether the customize icon ends
- * up middle (post-DES-587) or at the right edge of the header. Above-the-
- * button avoids pushing into the children list when the group is expanded.
+ * Anchoring strategy: horizontally centred on the button via
+ * `left: 50%; transform: translateX(-50%)` and placed above with
+ * `bottom: calc(100% + 6px)`. Above-the-button avoids pushing into the
+ * children list when the group is expanded.
  *
  * The tooltip never shows on `:disabled` — the customize button is disabled
  * during A.1 (before A.2 wires the click handler) and may become disabled at
@@ -248,7 +248,8 @@ body.wp-admin-sidebar-active .wp-admin-sidebar-group__customize::after {
 	content: attr( data-tooltip );
 	position: absolute;
 	bottom: calc( 100% + 6px );
-	right: 0;
+	left: 50%;
+	transform: translateX( -50% );
 	padding: 4px 8px;
 	background: var( --wp-admin-sidebar-bg );
 	color: var( --wp-admin-sidebar-item-fg );

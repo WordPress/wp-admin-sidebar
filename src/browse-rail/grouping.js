@@ -243,13 +243,15 @@ function buildGroupContainer( group, customizable ) {
 		const customize = document.createElement( 'button' );
 		customize.type = 'button';
 		customize.classList.add( CLASS_GROUP_CUSTOMIZE );
-		// Translators: aria-label for the plugins-group customize button.
+		// Translators: aria-label for the plugins-group customize (reorder) button.
 		// The customize button only renders for the `plugins` group (see
-		// `customizable = group.id === 'plugins'` below), so "Customize plugins"
-		// is accurate. `data-tooltip` mirrors the same string and is surfaced
+		// `customizable = group.id === 'plugins'` below). "Edit plugin order"
+		// describes the only action the mode performs (drag-drop reorder),
+		// addressing the icon-confusion finding from May 2026 usability testing
+		// (issue #56). `data-tooltip` mirrors the same string and is surfaced
 		// visually by the CSS pseudo-element on hover/focus (see styles.css).
-		customize.setAttribute( 'aria-label', 'Customize plugins' );
-		customize.setAttribute( 'data-tooltip', 'Customize plugins' );
+		customize.setAttribute( 'aria-label', 'Edit plugin order' );
+		customize.setAttribute( 'data-tooltip', 'Edit plugin order' );
 		// A.2 wires the click handler. In A.1 the button renders but is inert.
 		customize.disabled = true;
 		header.appendChild( customize );
