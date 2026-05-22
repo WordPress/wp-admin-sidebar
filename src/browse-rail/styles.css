@@ -1,26 +1,52 @@
 /*
  * Browse-rail styles.
  *
- * Phase 1 ships against the WP default dark admin color scheme only. Other
- * schemes (light, midnight, ocean, sunrise, coffee, ectoplasm, modern) are
- * Phase-1.1 work.
- *
  * Design tokens are CSS custom properties so future token updates are a
- * one-file change. Values come from the Figma audit (plan 03-contracts.md § 8
- * "Design tokens").
+ * one-file change. Accent colours are bound to wp-admin's native
+ * scheme-aware `--wp-admin-theme-color` (defined on `body` per
+ * `admin-color-*` class in core 5.7+), so the redesigned surface follows
+ * the user's chosen admin colour scheme (Fresh, Light, Modern, Blue,
+ * Coffee, Ectoplasm, Midnight, Ocean, Sunrise). Fallbacks preserve the
+ * original Fresh-scheme values for older WP installs or environments
+ * that don't expose the variable.
+ *
+ * Values come from the Figma audit (plan 03-contracts.md § 8
+ * "Design tokens") cross-referenced with wp-admin's `colors-*.css`
+ * native palettes — see issue #54 for the original "three different
+ * hues of blue" report from May 2026 usability testing.
  */
 
 :root {
 	--wp-admin-sidebar-bg: #1d2327;
 	--wp-admin-sidebar-item-fg: #f0f0f1;
-	--wp-admin-sidebar-group-label-fg: #71aee2;
 	--wp-admin-sidebar-customizer-item-bg: #2c3439;
 	--wp-admin-sidebar-drag-source-opacity: 0.3;
 	--wp-admin-sidebar-drag-ghost-opacity: 0.95;
 	--wp-admin-sidebar-drop-indicator-width: 112px;
 	--wp-admin-sidebar-drop-indicator-height: 2px;
-	--wp-admin-sidebar-customizer-theme: #3858e9;
-	--wp-admin-sidebar-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+	/*
+	 * Accent tokens. Defaults are the Fresh scheme's `#2271b1` (matches
+	 * `.button-primary` and the sidebar current-item background). At
+	 * runtime, `color-scheme-preview.js` reads the active scheme's
+	 * highlight from `.button-primary`'s computed `background-color`
+	 * and overrides both tokens with the actual native value — same
+	 * during preview as for the saved state. That single source means
+	 * any wp-admin colour scheme (built-in or third-party-registered
+	 * via `wp_admin_css_color()`) just works without enumerating hex
+	 * values here.
+	 */
+	--wp-admin-sidebar-group-label-fg: #2271b1;
+	--wp-admin-sidebar-customizer-theme: #2271b1;
+
+	/*
+	 * wp-admin's native admin font stack (matches `body` and `#adminmenu`
+	 * rules in core's wp-admin.css). Removes 'SF Pro Text' which only
+	 * resolves on Apple platforms and silently fell through to the next
+	 * stack entry everywhere else — testers reported the typography felt
+	 * "off" from native (#54).
+	 */
+	--wp-admin-sidebar-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 	--wp-admin-sidebar-font-size: 14px;
 	--wp-admin-sidebar-line-height: 20px;
 	--wp-admin-sidebar-letter-spacing: -0.15px;
