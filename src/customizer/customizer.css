@@ -90,6 +90,37 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassi
 	color: inherit;
 }
 
+/* Image-icon parity with dashicons inside reassignable rows.
+ *
+ * wp-admin core ships:
+ *   #adminmenu div.wp-menu-image img                          { opacity: 0.6; }
+ *   #adminmenu li:hover    div.wp-menu-image img,
+ *   #adminmenu li.opensub  div.wp-menu-image img,
+ *   #adminmenu li.wp-has-current-submenu div.wp-menu-image img,
+ *   #adminmenu li.current  div.wp-menu-image img              { opacity: 1; }
+ *
+ * Plugins that ship an <img> logo (Elementor, Jetpack, UpdraftPlus, …) sit
+ * dimmer than dashicon neighbours at idle (0.6) and pop to full opacity on
+ * hover / opensub. The mismatched idle brightness reads as "that one icon
+ * has a different colour" and the hover pop makes plugin rows flicker as
+ * the cursor moves through the list — both unwanted in customize mode,
+ * where rows are inert by design and the only interactive affordance is
+ * the grip handle (DES-605).
+ *
+ * Lock the img opacity to 1 across idle / hover / opensub / focus so every
+ * reassignable row renders at the same brightness regardless of cursor
+ * position. Picking 1 (not 0.6) matches the "active" state wp-admin already
+ * uses for current / opensub rows — visually consistent with the dashicon
+ * `::before` rules above, which inherit the menu's idle text colour at full
+ * opacity.
+ */
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable div.wp-menu-image img,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover div.wp-menu-image img,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable.opensub div.wp-menu-image img,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:focus div.wp-menu-image img {
+	opacity: 1;
+}
+
 /* Right-edge arrow / "submenu opens here" indicator suppression. wp-admin
  * paints a triangular `::after` on the LI on hover / focus-within for
  * items that have submenus and aren't current. In customize mode the
