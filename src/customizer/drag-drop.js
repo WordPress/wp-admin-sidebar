@@ -108,7 +108,10 @@ export function attachDragDrop( sidebar, controller ) {
 			// Move the DOM to the slot the indicator was occupying. The model
 			// update follows so isDirty derivation sees the new position.
 			lastTarget.container.insertBefore( activeItem.li, lastTarget.beforeLi || null );
-			controller.commitMove( activeItem.itemId, lastTarget.position );
+			controller.commitMove( activeItem.itemId, lastTarget.position, {
+				previousPosition: activeItem.sourcePosition,
+				label: trim( activeItem.li ),
+			} );
 		}
 		cleanup();
 	}
@@ -158,7 +161,7 @@ export function attachDragDrop( sidebar, controller ) {
 				const groupId = li.getAttribute( 'data-group' );
 				if ( ! groupId ) continue;
 				const isExpanded = li.getAttribute( 'data-expanded' ) === 'true';
-				const isEmpty = childList.querySelectorAll( ':scope > li' ).length === 0;
+				const isEmpty = layoutSiblings( childList ).length === 0;
 				if ( ! isExpanded || isEmpty ) {
 					// Drop on a collapsed group header → land at the end of that
 					// group. Also handles the expanded-but-empty case: once the
@@ -171,7 +174,7 @@ export function attachDragDrop( sidebar, controller ) {
 					return {
 						container: childList,
 						beforeLi: null,
-						position: { kind: 'in_group', group_id: groupId, index: childList.children.length },
+						position: { kind: 'in_group', group_id: groupId, index: layoutSiblings( childList ).length },
 					};
 				}
 				continue;
@@ -183,7 +186,9 @@ export function attachDragDrop( sidebar, controller ) {
 			const container = li.parentElement;
 			if ( ! container ) continue;
 			const groupContainer = container.closest( 'li.wp-admin-sidebar-group' );
-			const baseIndex = Array.prototype.indexOf.call( container.children, li );
+			const siblings = layoutSiblings( container );
+			const baseIndex = siblings.indexOf( li );
+			if ( baseIndex === -1 ) continue;
 			let slot = above ? baseIndex : baseIndex + 1;
 			// If the source is in the same container at a lower index, dropping
 			// it later requires a -1 adjustment: removing the source shifts
@@ -191,23 +196,24 @@ export function attachDragDrop( sidebar, controller ) {
 			// override's index is one too high and the item lands one slot
 			// further than the user dropped on next render.
 			if ( activeItem.li.parentElement === container ) {
-				const sourceIndex = Array.prototype.indexOf.call( container.children, activeItem.li );
+				const sourceIndex = siblings.indexOf( activeItem.li );
 				if ( sourceIndex !== -1 && sourceIndex < slot ) {
 					slot -= 1;
 				}
 			}
+			const beforeLi = above ? li : nextLayoutSibling( siblings, li );
 			if ( groupContainer ) {
 				const groupId = groupContainer.getAttribute( 'data-group' );
 				return {
 					container,
-					beforeLi: above ? li : li.nextElementSibling,
+					beforeLi,
 					position: { kind: 'in_group', group_id: groupId, index: slot },
 				};
 			}
 			// Top-level row in the sidebar root.
 			return {
 				container,
-				beforeLi: above ? li : li.nextElementSibling,
+				beforeLi,
 				position: { kind: 'top_level', index: slot },
 			};
 		}
@@ -280,6 +286,27 @@ function createGhost( li ) {
 		ghost.textContent = ( li.textContent || '' ).trim();
 	}
 	return ghost;
+}
+
+function trim( li ) {
+	const link = li.querySelector( ':scope > a' );
+	if ( ! link ) {
+		return ( li.textContent || '' ).trim();
+	}
+	const clone = link.cloneNode( true );
+	clone.querySelectorAll( '.wp-admin-sidebar-item__grip, .wp-admin-sidebar-item__more' ).forEach( ( el ) => el.remove() );
+	return ( clone.textContent || '' ).trim();
+}
+
+function layoutSiblings( container ) {
+	return Array.from( container.children ).filter(
+		( el ) => el.tagName === 'LI' && ! el.classList.contains( INDICATOR_CLASS )
+	);
+}
+
+function nextLayoutSibling( siblings, li ) {
+	const index = siblings.indexOf( li );
+	return index === -1 ? null : siblings[ index + 1 ] || null;
 }
 
 /**

@@ -63,6 +63,8 @@ export function attachKeyboardReorder( sidebar, controller ) {
 		if ( ! itemId ) {
 			return;
 		}
+		const sourcePosition = positionForElement( li );
+		const label = trim( li, itemId );
 
 		const groupContainer = container.closest( 'li.wp-admin-sidebar-group' );
 		const groupId = groupContainer ? groupContainer.getAttribute( 'data-group' ) : null;
@@ -78,10 +80,12 @@ export function attachKeyboardReorder( sidebar, controller ) {
 			container.insertBefore( li, targetSibling.nextElementSibling );
 		}
 
-		controller.commitMove( itemId, position );
+		controller.commitMove( itemId, position, {
+			previousPosition: sourcePosition,
+			label,
+		} );
 
 		const total = siblings.length;
-		const label = ( li.querySelector( ':scope > a' )?.textContent || itemId ).trim();
 		controller.announce( `Moved ${ label } to position ${ target + 1 } of ${ total }.` );
 
 		grip.focus();
@@ -91,4 +95,27 @@ export function attachKeyboardReorder( sidebar, controller ) {
 	return function detach() {
 		sidebar.removeEventListener( 'keydown', onKeyDown );
 	};
+}
+
+function positionForElement( li ) {
+	const groupContainer = li.parentElement && li.parentElement.closest( 'li.wp-admin-sidebar-group' );
+	const siblings = li.parentElement ? Array.prototype.indexOf.call( li.parentElement.children, li ) : 0;
+	if ( groupContainer ) {
+		return {
+			kind: 'in_group',
+			group_id: groupContainer.getAttribute( 'data-group' ) || '',
+			index: siblings,
+		};
+	}
+	return { kind: 'top_level', index: siblings };
+}
+
+function trim( li, fallback ) {
+	const link = li.querySelector( ':scope > a' );
+	if ( ! link ) {
+		return ( li.textContent || fallback || '' ).trim();
+	}
+	const clone = link.cloneNode( true );
+	clone.querySelectorAll( '.wp-admin-sidebar-item__grip, .wp-admin-sidebar-item__more' ).forEach( ( el ) => el.remove() );
+	return ( clone.textContent || fallback || '' ).trim();
 }

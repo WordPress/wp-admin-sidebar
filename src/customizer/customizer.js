@@ -4,8 +4,9 @@
  * Loaded lazily by browse-rail.js when the user clicks the per-group customize
  * button. Bootstraps draft state, decorates reassignable items with grip
  * handles + 3-dot triggers, attaches drag-drop + keyboard reorder + move-menu,
- * and renders Cancel / Save controls. On save POSTs the working delta and
- * exits; on cancel discards and exits.
+ * and renders auto-save status with Undo / Done controls. Each completed move
+ * queues a layout POST; Undo restores the previous operation and queues another
+ * POST; Done exits the mode.
  *
  * The body class `wp-admin-sidebar-mode-customize` is the CSS scope for
  * customizer-only styling; the entry / exit dance toggles it on `<body>`.
@@ -25,12 +26,13 @@ const REASSIGNABLE_CLASS = 'wp-admin-sidebar-item--reassignable';
 const GRIP_CLASS = 'wp-admin-sidebar-item__grip';
 const FOOTER_CLASS = 'wp-admin-sidebar-customize-footer';
 const ANNOUNCE_ID = 'wp-admin-sidebar-customize-live';
+const MAX_UNDO_STACK = 10;
 // Marker on group <li>s whose collapse toggle is locked for the duration
 // of a customize session. Drives the not-allowed cursor + dimmed chevron
 // styling in customizer.css. See expandGroupsForCustomizing() (issue #55).
 const GROUP_LOCKED_CLASS = 'wp-admin-sidebar-group--reorder-locked';
 
-let active = null; // { state, detachFns, footerEl, liveEl, beforeunloadHandler }
+let active = null; // { state, detachFns, footerEl, liveEl, beforeunloadHandler, undoStack }
 
 /**
  * Resolve the cache-bust suffix from the entry's own URL so dynamic imports
@@ -53,17 +55,16 @@ function resolveBust() {
  * @param {Object} navModel
  * @param {Object|null} savedDelta  Saved layout delta from the inline payload.
  * @param {Object} options          { restRoot, restUrl, nonce, onExit }
- *   - `restUrl` is the fully-resolved layout endpoint (preferred); save()
+ *   - `restUrl` is the fully-resolved layout endpoint (preferred); auto-save
  *     uses it directly. Hosts that route REST through a centralized
  *     public-api dispatcher set this to their own endpoint; plain WP
  *     leaves it pointing at the same-origin /wp-json/ route. Newer inline
  *     payloads always emit it.
  *   - `restRoot` is the legacy fallback for inline payloads that didn't
- *     include `restUrl`. Save concatenates the core route on it.
+ *     include `restUrl`. Auto-save concatenates the core route on it.
  *   - `nonce` is the wp_rest cookie nonce for the POST.
- *   - `onExit` (optional) fires when the customizer closes (Save, Cancel,
- *     or programmatic exit). Used by browse-rail.js to refocus the
- *     triggering customize button.
+ *   - `onExit` (optional) fires when the customizer closes. Used by
+ *     browse-rail.js to refocus the triggering customize button.
  */
 export async function enterCustomizer( sidebar, navModel, savedDelta, options ) {
 	if ( active ) {
@@ -77,23 +78,31 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 		import( `./keyboard-reorder.js?ver=${ bust }` ),
 		import( `./move-menu.js?ver=${ bust }` ),
 	] );
-	const { createState, moveItem, resetItem, beginDrag, endDrag, applySaved, cloneDelta } = draftState;
+	const {
+		createState,
+		moveItem,
+		resetItem,
+		beginDrag,
+		endDrag,
+		cloneDelta,
+		deltasEqual,
+		updateSaved,
+		restoreWorking,
+	} = draftState;
 	const { attachDragDrop } = dragDrop;
 	const { attachKeyboardReorder } = keyboardReorder;
 	const { attachMoveMenu } = moveMenu;
 
-	// Stash the helpers used by save() (which is module-scope so it can keep
-	// access across exit/re-enter cycles) on the active record.
-	const helpers = { applySaved, cloneDelta };
+	// Stash helpers used by the module-scope auto-save and undo flows so they
+	// stay available across exit / re-enter cycles.
+	const helpers = { cloneDelta, deltasEqual, updateSaved, restoreWorking };
 
 	const state = createState( navModel, savedDelta );
 	const liveEl = createLiveRegion();
-	// Snapshot the DOM order of every reassignable LI BEFORE any
-	// decoration runs. Drag-drop / keyboard / menu moves mutate the live
-	// DOM during the customize session, but Cancel only drops the working
-	// delta — without restoring the snapshot, unsaved DOM moves stay
-	// visible until reload. See exitCustomizer().
-	const layoutSnapshot = captureLayoutSnapshot( sidebar );
+	// Snapshot the DOM order of every reassignable LI before decoration runs.
+	// This represents the latest known saved layout at session start. Auto-save
+	// updates it only after the server catches up with the current DOM.
+	const savedLayoutSnapshot = captureLayoutSnapshot( sidebar );
 	document.body.classList.add( BODY_MODE_CLASS );
 	// Strip core's `opensub` hover-intent class off any top-level item that
 	// happened to be flyout-open when the user entered customize. The CSS
@@ -108,19 +117,23 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 	const restoreGroupState = expandGroupsForCustomizing( sidebar );
 
 	const controller = {
-		commitMove( itemId, position ) {
-			active.state = moveItem( active.state, itemId, position );
-			updateFooter();
+		commitMove( itemId, position, details = {} ) {
+			return commitWorkingChange(
+				itemId,
+				{ ...details, nextPosition: position },
+				( state ) => moveItem( state, itemId, position )
+			);
 		},
-		resetItem( itemId ) {
-			active.state = resetItem( active.state, itemId );
-			updateFooter();
+		resetItem( itemId, details = {} ) {
+			return commitWorkingChange( itemId, details, ( state ) => resetItem( state, itemId ) );
 		},
 		beginDrag( itemId, sourcePosition ) {
 			active.state = beginDrag( active.state, itemId, sourcePosition );
+			updateFooter();
 		},
 		exitDrag() {
 			active.state = endDrag( active.state );
+			updateFooter();
 		},
 		announce( msg ) {
 			liveEl.textContent = '';
@@ -136,15 +149,18 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 	const detachMenu = attachMoveMenu( sidebar, navModel, controller );
 	const detachLinkSuppress = suppressReassignableLinkClicks( sidebar );
 	const detachCollapseMenu = disableCollapseMenuFocus();
+	const detachEscape = attachGlobalEscapeShortcut();
 
-	const footerEl = renderFooter( sidebar, async function onSave() {
-		await save( options );
-	}, function onCancel() {
+	const footerEl = renderFooter( sidebar, function onUndo() {
+		undoLastChange();
+	}, function onRetry() {
+		retryAutosave();
+	}, function onDone() {
 		exitCustomizer( { confirmIfDirty: true } );
 	} );
 
 	const beforeunloadHandler = ( ev ) => {
-		if ( active && active.state.isDirty ) {
+		if ( active && hasUnsavedChanges() ) {
 			ev.preventDefault();
 			ev.returnValue = '';
 			return '';
@@ -154,14 +170,19 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 
 	active = {
 		state,
-		detachFns: [ detachDrag, detachKeyboard, detachMenu, detachLinkSuppress, detachCollapseMenu ],
+		detachFns: [ detachDrag, detachKeyboard, detachMenu, detachLinkSuppress, detachCollapseMenu, detachEscape ],
 		footerEl,
 		liveEl,
 		beforeunloadHandler,
 		restoreGroupState,
-		layoutSnapshot,
+		savedLayoutSnapshot,
 		opensubSnapshot,
 		helpers,
+		sidebar,
+		undoStack: [],
+		pendingSaveDelta: null,
+		savePromise: null,
+		lastSavedAt: 0,
 		onExit: options && typeof options.onExit === 'function' ? options.onExit : null,
 		options,
 	};
@@ -175,18 +196,18 @@ export function exitCustomizer( { confirmIfDirty = false } = {} ) {
 	if ( ! active ) {
 		return;
 	}
-	if ( confirmIfDirty && active.state.isDirty ) {
-		if ( ! window.confirm( 'Discard your unsaved changes?' ) ) {
+	if ( confirmIfDirty && hasUnsavedChanges() ) {
+		const message = active.state.saveError
+			? 'Some changes could not be saved. Exit and discard unsaved changes?'
+			: 'Exit and discard unsaved changes?';
+		if ( ! window.confirm( message ) ) {
 			return;
 		}
-		// Cancel-after-dirty: restore the LI order snapshot taken at
-		// enterCustomizer time. Drag / keyboard / move-menu moves mutate
-		// the live DOM during the session; without this, the unsaved
-		// order stays visible until the next reload. Save flow takes the
-		// non-confirmIfDirty exitCustomizer() branch (no snapshot
-		// restore needed because the saved delta now matches the DOM).
-		if ( active.layoutSnapshot ) {
-			restoreLayoutSnapshot( active.layoutSnapshot );
+		// Restore the last DOM snapshot known to match saved server state.
+		// This can be newer than the entry snapshot when earlier auto-saves
+		// completed before a later save failed or was still in flight.
+		if ( active.savedLayoutSnapshot ) {
+			restoreLayoutSnapshot( active.savedLayoutSnapshot );
 		}
 	}
 
@@ -441,47 +462,82 @@ function undecorateReassignableItems( sidebar ) {
 }
 
 /**
- * Render Cancel / Save buttons docked to the bottom of the sidebar.
+ * Render auto-save status and compact Undo / Done controls at the bottom of
+ * the sidebar.
  */
-function renderFooter( sidebar, onSave, onCancel ) {
+function renderFooter( sidebar, onUndo, onRetry, onDone ) {
 	const footer = document.createElement( 'div' );
 	footer.className = FOOTER_CLASS;
 
-	const cancel = document.createElement( 'button' );
-	cancel.type = 'button';
-	cancel.className = FOOTER_CLASS + '__cancel';
-	cancel.textContent = 'Cancel';
-	cancel.addEventListener( 'click', onCancel );
+	const status = document.createElement( 'div' );
+	status.className = FOOTER_CLASS + '__status';
+	status.textContent = 'Changes save automatically.';
 
-	const save = document.createElement( 'button' );
-	save.type = 'button';
-	save.className = FOOTER_CLASS + '__save';
-	save.textContent = 'Save';
-	save.disabled = true;
-	save.addEventListener( 'click', onSave );
+	const undo = document.createElement( 'button' );
+	undo.type = 'button';
+	undo.className = FOOTER_CLASS + '__undo';
+	undo.textContent = 'Undo';
+	undo.disabled = true;
+	undo.addEventListener( 'click', onUndo );
 
-	footer.appendChild( cancel );
-	footer.appendChild( save );
+	const retry = document.createElement( 'button' );
+	retry.type = 'button';
+	retry.className = FOOTER_CLASS + '__retry';
+	retry.textContent = 'Retry';
+	retry.hidden = true;
+	retry.addEventListener( 'click', onRetry );
+
+	const done = document.createElement( 'button' );
+	done.type = 'button';
+	done.className = FOOTER_CLASS + '__done';
+	done.textContent = 'Done';
+	done.addEventListener( 'click', onDone );
+
+	footer.appendChild( status );
+	footer.appendChild( undo );
+	footer.appendChild( retry );
+	footer.appendChild( done );
 	sidebar.parentNode.insertBefore( footer, sidebar.nextSibling );
 	return footer;
 }
 
 function updateFooter() {
 	if ( ! active ) return;
-	const save = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__save' );
-	if ( save ) {
-		save.disabled = ! active.state.isDirty || active.state.isSaving;
-		save.textContent = active.state.isSaving ? 'Saving…' : 'Save';
+	const status = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__status' );
+	const undo = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__undo' );
+	const retry = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__retry' );
+	const done = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__done' );
+	if ( status ) {
+		if ( active.state.saveError ) {
+			status.textContent = active.state.saveError.message || 'Save failed.';
+		} else if ( active.state.isSaving || active.pendingSaveDelta ) {
+			status.textContent = 'Saving...';
+		} else if ( active.state.isDirty ) {
+			status.textContent = 'Unsaved changes.';
+		} else if ( active.lastSavedAt ) {
+			status.textContent = 'Saved.';
+		} else {
+			status.textContent = 'Changes save automatically.';
+		}
+	}
+	if ( undo ) {
+		undo.disabled = active.undoStack.length === 0 || !! active.state.activeDrag;
+	}
+	if ( retry ) {
+		retry.hidden = ! active.state.saveError;
+		retry.disabled = active.state.isSaving;
+	}
+	if ( done ) {
+		done.disabled = active.state.isSaving || !! active.pendingSaveDelta;
 	}
 }
 
 /**
  * Capture the DOM order of every reassignable LI before customizer mode
- * mutates anything. Returns an array of {li, parent, nextSibling}; pass it
- * to restoreLayoutSnapshot() on Cancel-after-dirty to put rows back where
- * the user found them. Captures only items with `data-wp-admin-sidebar-item-id`
- * (the reassignable surface) — core rows like Dashboard / Tools / Settings
- * are inert during customize and don't need snapshotting.
+ * mutates anything. Returns an array of {li, parent, nextSibling}; pass it to
+ * restoreLayoutSnapshot() when discarding unsaved changes. Captures only items
+ * with `data-wp-admin-sidebar-item-id`; core rows like Dashboard, Tools, and
+ * Settings are inert during customize and don't need snapshotting.
  *
  * @param {HTMLElement} sidebar
  * @returns {Array<{li:Element,parent:Node,nextSibling:Node|null}>}
@@ -562,71 +618,268 @@ function createLiveRegion() {
 	return live;
 }
 
-/**
- * POST the working delta. On success replace savedDelta + exit. On error
- * leave the state intact and surface the failure.
- */
-async function save( options ) {
-	if ( ! active ) return;
+function commitWorkingChange( itemId, details, mutateState ) {
+	if ( ! active ) {
+		return false;
+	}
+	if (
+		details.previousPosition &&
+		details.nextPosition &&
+		positionsEqual( details.previousPosition, details.nextPosition )
+	) {
+		updateFooter();
+		return false;
+	}
+
+	const previousDelta = active.helpers.cloneDelta( active.state.workingDelta );
+	const nextState = mutateState( active.state );
+	if ( active.helpers.deltasEqual( previousDelta, nextState.workingDelta ) ) {
+		active.state = nextState;
+		updateFooter();
+		return false;
+	}
+
+	active.state = nextState;
+	if ( details.previousPosition ) {
+		active.undoStack.push( {
+			itemId,
+			previousPosition: clonePosition( details.previousPosition ),
+			previousDelta,
+			label: details.label || itemId,
+		} );
+		if ( active.undoStack.length > MAX_UNDO_STACK ) {
+			active.undoStack.shift();
+		}
+	}
+	scheduleAutosave();
+	updateFooter();
+	return true;
+}
+
+function undoLastChange() {
+	if ( ! active || active.state.activeDrag || active.undoStack.length === 0 ) {
+		return;
+	}
+	const frame = active.undoStack.pop();
+	const li = findItemById( active.sidebar, frame.itemId );
+	if ( ! li || ! moveItemElementToPosition( active.sidebar, li, frame.previousPosition ) ) {
+		active.undoStack.push( frame );
+		announce( 'Could not undo the last change.' );
+		updateFooter();
+		return;
+	}
+	active.state = active.helpers.restoreWorking( active.state, frame.previousDelta );
+	scheduleAutosave();
+	announce( `Undid last change for ${ frame.label }.` );
+	updateFooter();
+}
+
+function retryAutosave() {
+	if ( ! active || active.state.isSaving ) {
+		return;
+	}
+	scheduleAutosave();
+}
+
+function scheduleAutosave() {
+	if ( ! active ) {
+		return;
+	}
+	if ( ! active.state.isDirty && ! active.savePromise && ! active.state.saveError ) {
+		updateFooter();
+		return;
+	}
+	active.pendingSaveDelta = active.helpers.cloneDelta( active.state.workingDelta );
 	active.state = { ...active.state, isSaving: true, saveError: null };
 	updateFooter();
+	void flushAutosaveQueue();
+}
 
-	// Prefer the fully-resolved `restUrl` emitted by the data planner — when a
-	// host overrides via the `wp_admin_sidebar_layout_rest_url` filter (e.g.,
-	// to route through a centralized public-api endpoint), this carries the
-	// host's URL; on plain WP it carries the same-origin /wp-json/ route. The
-	// `restRoot` fallback is for older inline payloads that didn't include
-	// `restUrl`; it assumes the core `wp-admin-sidebar/v1` route on /wp-json/.
+function flushAutosaveQueue() {
+	if ( ! active ) {
+		return Promise.resolve();
+	}
+	if ( active.savePromise ) {
+		return active.savePromise;
+	}
+	active.savePromise = runAutosaveQueue().finally( () => {
+		if ( active ) {
+			active.savePromise = null;
+			updateFooter();
+		}
+	} );
+	return active.savePromise;
+}
+
+async function runAutosaveQueue() {
+	while ( active && active.pendingSaveDelta ) {
+		const delta = active.pendingSaveDelta;
+		active.pendingSaveDelta = null;
+		try {
+			const saved = await postLayoutDelta( active.options, delta );
+			if ( ! active ) {
+				return;
+			}
+			active.state = active.helpers.updateSaved( active.state, saved );
+			publishSavedDelta( saved );
+			active.lastSavedAt = Date.now();
+			if ( active.helpers.deltasEqual( active.state.workingDelta, saved ) && active.sidebar ) {
+				active.savedLayoutSnapshot = captureLayoutSnapshot( active.sidebar );
+			}
+			if ( active.pendingSaveDelta ) {
+				active.state = { ...active.state, isSaving: true, saveError: null };
+			}
+			updateFooter();
+		} catch ( err ) {
+			if ( ! active ) {
+				return;
+			}
+			if ( active.pendingSaveDelta ) {
+				active.state = { ...active.state, isSaving: true, saveError: null };
+				updateFooter();
+				continue;
+			}
+			active.state = {
+				...active.state,
+				isSaving: false,
+				saveError: { code: 'save_failed', message: err && err.message ? err.message : 'Save failed.' },
+			};
+			announce( active.state.saveError.message );
+			updateFooter();
+			return;
+		}
+	}
+	if ( active ) {
+		active.state = { ...active.state, isSaving: false };
+		updateFooter();
+	}
+}
+
+async function postLayoutDelta( options, delta ) {
+	// Prefer the fully-resolved `restUrl` emitted by the data planner. Hosts
+	// can rebind it through `wp_admin_sidebar_layout_rest_url`; the `restRoot`
+	// fallback supports older inline payloads.
 	const url = options.restUrl
 		? options.restUrl
 		: `${ options.restRoot.replace( /\/+$/, '' ) }/wp-admin-sidebar/v1/layout`;
-	const body = JSON.stringify( active.helpers.cloneDelta( active.state.workingDelta ) );
+	const res = await fetch( url, {
+		method: 'POST',
+		credentials: 'same-origin',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-WP-Nonce': options.nonce,
+		},
+		body: JSON.stringify( delta ),
+	} );
+	if ( ! res.ok ) {
+		const detail = await safeJson( res );
+		throw new Error( ( detail && detail.message ) || `Save failed (${ res.status }).` );
+	}
+	return res.json();
+}
 
-	try {
-		const res = await fetch( url, {
-			method: 'POST',
-			credentials: 'same-origin',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': options.nonce,
-			},
-			body,
-		} );
-		// User clicked Cancel mid-fetch — exitCustomizer() set active=null.
-		// Abandon the save flow rather than dereferencing null.
-		if ( ! active ) return;
-		if ( ! res.ok ) {
-			const detail = await safeJson( res );
-			throw new Error( ( detail && detail.message ) || `Save failed (${ res.status }).` );
+function publishSavedDelta( saved ) {
+	if ( typeof window !== 'undefined' && window.wpAdminSidebarData ) {
+		window.wpAdminSidebarData.layoutDelta = saved;
+	}
+}
+
+function hasUnsavedChanges() {
+	return !! (
+		active &&
+		( active.state.isDirty || active.state.isSaving || active.pendingSaveDelta || active.state.saveError )
+	);
+}
+
+function attachGlobalEscapeShortcut() {
+	function onKeyDown( ev ) {
+		if ( ev.key !== 'Escape' || ev.defaultPrevented || ! active ) {
+			return;
 		}
-		const saved = await res.json();
-		if ( ! active ) return;
-		active.state = active.helpers.applySaved( active.state, saved );
-		// Publish the saved delta back to the inline data global so a same-
-		// page re-entry (Customize → Save → Customize again, no reload)
-		// sees the latest state instead of the stale layoutDelta captured
-		// when wireCustomizeButtons() ran on initial load.
-		// browse-rail.js#wireCustomizeButtons reads this fresh on each click.
-		if ( typeof window !== 'undefined' && window.wpAdminSidebarData ) {
-			window.wpAdminSidebarData.layoutDelta = saved;
+		if ( active.state.activeDrag ) {
+			return;
 		}
-		updateFooter();
-		exitCustomizer();
-	} catch ( err ) {
-		// Same-pattern null-guard: a Cancel mid-fetch followed by a fetch
-		// rejection would otherwise dereference null on `active.state`.
-		if ( ! active ) return;
-		active.state = {
-			...active.state,
-			isSaving: false,
-			saveError: { code: 'save_failed', message: err && err.message ? err.message : 'Save failed.' },
-		};
-		updateFooter();
-		const live = active && active.liveEl;
-		if ( live ) {
-			live.textContent = active.state.saveError.message;
+		if ( active.state.isSaving || active.pendingSaveDelta ) {
+			return;
+		}
+		ev.preventDefault();
+		exitCustomizer( { confirmIfDirty: true } );
+	}
+	document.addEventListener( 'keydown', onKeyDown );
+	return function detach() {
+		document.removeEventListener( 'keydown', onKeyDown );
+	};
+}
+
+function announce( msg ) {
+	if ( ! active || ! active.liveEl ) {
+		return;
+	}
+	active.liveEl.textContent = '';
+	requestAnimationFrame( () => {
+		if ( active && active.liveEl ) {
+			active.liveEl.textContent = msg;
+		}
+	} );
+}
+
+function findItemById( sidebar, itemId ) {
+	if ( ! sidebar ) {
+		return null;
+	}
+	const items = sidebar.querySelectorAll( 'li[data-wp-admin-sidebar-item-id]' );
+	for ( const li of items ) {
+		if ( li.getAttribute( 'data-wp-admin-sidebar-item-id' ) === itemId ) {
+			return li;
 		}
 	}
+	return null;
+}
+
+function moveItemElementToPosition( sidebar, li, position ) {
+	const target = resolveTargetContainer( sidebar, position );
+	if ( ! target ) {
+		return false;
+	}
+	const siblings = Array.from( target.children ).filter(
+		( el ) => el.tagName === 'LI' && el !== li && ! el.classList.contains( 'wp-admin-sidebar-drop-indicator' )
+	);
+	const requested = Number.isFinite( position.index ) ? Math.floor( position.index ) : 0;
+	const idx = Math.max( 0, Math.min( requested, siblings.length ) );
+	target.insertBefore( li, siblings[ idx ] || null );
+	return true;
+}
+
+function resolveTargetContainer( sidebar, position ) {
+	if ( ! sidebar || ! position || typeof position !== 'object' ) {
+		return null;
+	}
+	if ( position.kind === 'top_level' ) {
+		return sidebar;
+	}
+	if ( position.kind === 'in_group' ) {
+		const groups = sidebar.querySelectorAll( 'li.wp-admin-sidebar-group' );
+		for ( const group of groups ) {
+			if ( group.getAttribute( 'data-group' ) === position.group_id ) {
+				return group.querySelector( ':scope > .wp-admin-sidebar-group__children' );
+			}
+		}
+	}
+	return null;
+}
+
+function positionsEqual( a, b ) {
+	if ( ! a || ! b || a.kind !== b.kind || a.index !== b.index ) {
+		return false;
+	}
+	if ( a.kind === 'in_group' ) {
+		return a.group_id === b.group_id;
+	}
+	return true;
+}
+
+function clonePosition( position ) {
+	return { ...position };
 }
 
 async function safeJson( res ) {

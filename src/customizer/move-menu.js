@@ -183,6 +183,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 				return;
 			}
 			const target = rows[ targetIdx ];
+			const sourcePosition = positionForElement( li );
 			if ( target.classList.contains( 'wp-admin-sidebar-group' ) ) {
 				if ( direction > 0 ) {
 					const childrenUl = target.querySelector( ':scope > .wp-admin-sidebar-group__children' );
@@ -219,7 +220,10 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 			const position = newGroupId
 				? { kind: 'in_group', group_id: newGroupId, index: newLocalIdx }
 				: { kind: 'top_level', index: newLocalIdx };
-			controller.commitMove( itemId, position );
+			controller.commitMove( itemId, position, {
+				previousPosition: sourcePosition,
+				label: trim( li ),
+			} );
 			controller.announce(
 				`Moved ${ trim( li ) } to position ${ targetIdx + 1 } of ${ rows.length }.`
 			);
@@ -229,16 +233,28 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 
 		function moveToTopLevel() {
 			const position = { kind: 'top_level', index: 0 };
+			const sourcePosition = positionForElement( li );
 			sidebar.insertBefore( li, sidebar.firstElementChild );
-			controller.commitMove( itemId, position );
+			controller.commitMove( itemId, position, {
+				previousPosition: sourcePosition,
+				label: trim( li ),
+			} );
 			controller.announce( `Moved ${ trim( li ) } to top level.` );
 			closeMenu();
 			trigger.focus();
 		}
 
 		function resetToDefault( liEl, idOfItem ) {
+			const label = trim( liEl );
+			const sourcePosition = positionForElement( liEl );
 			// Remove the working override first so storage state stays in sync.
-			controller.resetItem( idOfItem );
+			if ( ! controller.resetItem( idOfItem, {
+				previousPosition: sourcePosition,
+				label,
+			} ) ) {
+				controller.announce( `${ label } is already at the default position.` );
+				return;
+			}
 			// Find the item's baseline position from the navModel (the post-classifier,
 			// pre-override layout). Snap the DOM back to that container at the
 			// best-effort baseline slot. Other items' overrides stay where they are —
@@ -265,7 +281,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 			);
 			const insertBeforeNode = reassignableSiblings[ baseline.index ] || null;
 			targetContainer.insertBefore( liEl, insertBeforeNode );
-			controller.announce( `Reset ${ trim( liEl ) } to default position.` );
+			controller.announce( `Reset ${ label } to default position.` );
 		}
 
 		function findBaselinePosition( idOfItem ) {
@@ -343,6 +359,19 @@ function collectRows( sidebar ) {
 		}
 	}
 	return rows;
+}
+
+function positionForElement( li ) {
+	const groupContainer = li.parentElement && li.parentElement.closest( 'li.wp-admin-sidebar-group' );
+	const siblings = li.parentElement ? Array.prototype.indexOf.call( li.parentElement.children, li ) : 0;
+	if ( groupContainer ) {
+		return {
+			kind: 'in_group',
+			group_id: groupContainer.getAttribute( 'data-group' ) || '',
+			index: siblings,
+		};
+	}
+	return { kind: 'top_level', index: siblings };
 }
 
 /**
@@ -434,5 +463,10 @@ function injectTrigger( li ) {
 
 function trim( li ) {
 	const link = li.querySelector( ':scope > a' );
-	return ( link ? link.textContent : li.textContent || '' ).trim();
+	if ( ! link ) {
+		return ( li.textContent || '' ).trim();
+	}
+	const clone = link.cloneNode( true );
+	clone.querySelectorAll( '.wp-admin-sidebar-item__grip, .wp-admin-sidebar-item__more' ).forEach( ( el ) => el.remove() );
+	return ( clone.textContent || '' ).trim();
 }

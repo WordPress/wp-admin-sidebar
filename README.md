@@ -9,7 +9,7 @@ The wp-admin sidebar gets crowded fast. Install half a dozen plugins and the lef
 
 **WP Admin Sidebar** is a small WordPress plugin that improves the wp-admin sidebar, starting with personal rearrangement of items and a curated **Plugins** group that consolidates plugin-added entries at the bottom. Activating the plugin enables the redesign for every logged-in user on the site — install is the opt-in. Fully reverts on deactivation. Drag, keyboard-reorder, or use a "Move to" menu to reposition any item; positions persist across sessions, per-site for each user.
 
-![Personalizing the wp-admin sidebar: drag a plugin item out of the Plugins group to any position you like, then save.](https://raw.githubusercontent.com/WordPress/wp-admin-sidebar/trunk/.github/assets/plugins-reorder.png)
+![Personalizing the wp-admin sidebar: drag a plugin item out of the Plugins group to any position you like.](https://raw.githubusercontent.com/WordPress/wp-admin-sidebar/trunk/.github/assets/plugins-reorder.png)
 
 It is built incrementally on top of wp-admin: plain ES modules, no React, no Gutenberg surface — a thin layer of JavaScript over server-rendered HTML, and a small set of PHP filter hooks for hosts and adapter authors to shape the experience for their environments.
 
@@ -37,7 +37,7 @@ To install on your own WordPress site:
 ## How it works
 
 - **Grouping.** Plugin-added top-level menu items get classified into a curated **Plugins** group at the bottom of the sidebar. Core items (Dashboard, Posts, Media, Pages, Comments, Appearance, Plugins, Users, Tools, Settings) keep their core positions. The classification is data-driven by a registry of common wp.org plugins (see [`src/registry.php`](src/registry.php)) plus a fall-through rule for everything else.
-- **Per-user reorder.** Click the customize button next to a group to enter customizer mode. Drag any item, use keyboard reordering (arrows after focusing the grip), or use the **Move to** menu (3-dot trigger). Save persists the layout in `user_meta` for the current site.
+- **Per-user reorder.** Click the customize button next to a group to enter customizer mode. Drag any item, use keyboard reordering (arrows after focusing the grip), or use the **Move to** menu (3-dot trigger). Changes save automatically to `user_meta` for the current site, with Undo available for recent moves.
 - **Reset to default.** Customizer's "Reset to default" returns an item to its baseline group + position from the classifier.
 - **Per-site, per-user.** Each user's saved layouts are scoped per site — a multisite network or a user with several sites gets independent layouts.
 - **No core changes.** The plugin runs entirely as a wp-admin overlay: it reads `$menu`/`$submenu`, classifies, then reorders DOM nodes client-side with the server's pre-classified data block.

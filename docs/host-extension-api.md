@@ -165,7 +165,7 @@ add_filter( 'wp_admin_sidebar_top_groups', function ( $groups ) {
 
 ### `wp_admin_sidebar_layout_rest_url`
 
-The customizer's save-URL for the per-user layout. Default is the same-origin `/wp-json/wp-admin-sidebar/v1/layout`. Hosts where `/wp-json/` is not directly reachable can rebind to a same-origin admin-ajax fallback or a host-specific REST proxy.
+The customizer's auto-save URL for the per-user layout. Default is `rest_url( 'wp-admin-sidebar/v1/layout' )`, so plain WordPress can use either pretty REST URLs or the `index.php?rest_route=/` fallback. Hosts where the default REST surface is not directly reachable can rebind to a same-origin admin-ajax fallback or a host-specific REST proxy.
 
 ```php
 apply_filters( 'wp_admin_sidebar_layout_rest_url', string $url ): string
