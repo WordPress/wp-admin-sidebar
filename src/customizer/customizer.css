@@ -345,6 +345,12 @@ body.wp-admin-sidebar-drop-hints-visible #adminmenu .wp-admin-sidebar-group__chi
 	bottom: 0;
 }
 
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-drop-hints-dismissed #adminmenu > li.menu-top::before,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-drop-hints-dismissed #adminmenu > li.wp-admin-sidebar-group::before,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-drop-hints-dismissed #adminmenu .wp-admin-sidebar-group__children > li::before,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-drop-hints-dismissed #adminmenu > li.menu-top:last-child::after,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-drop-hints-dismissed #adminmenu > li.wp-admin-sidebar-group:last-child::after,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-drop-hints-dismissed #adminmenu .wp-admin-sidebar-group__children > li:last-child::after,
 body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu > li.menu-top::before,
 body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu > li.wp-admin-sidebar-group::before,
 body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu .wp-admin-sidebar-group__children > li::before,
