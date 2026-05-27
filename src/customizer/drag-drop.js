@@ -19,7 +19,7 @@ const BODY_DRAGGING = 'wp-admin-sidebar-dragging';
  * Attach drag-drop handlers to the sidebar root for the customizer mode.
  *
  * @param {HTMLElement} sidebar  The #adminmenu element.
- * @param {Object} controller    { commitMove(itemId, position), exitDrag() }
+ * @param {Object} controller    { beginDrag(itemId, position), commitMove(itemId, position), exitDrag() }
  * @returns {Function} detach
  */
 export function attachDragDrop( sidebar, controller ) {
@@ -84,6 +84,9 @@ export function attachDragDrop( sidebar, controller ) {
 		ghost = createGhost( li );
 		document.body.appendChild( ghost );
 		moveGhost( ev.clientX, ev.clientY );
+		if ( typeof controller.beginDrag === 'function' ) {
+			controller.beginDrag( itemId, activeItem.sourcePosition );
+		}
 
 		document.addEventListener( 'pointermove', onPointerMove );
 		document.addEventListener( 'pointerup', onPointerUp );
