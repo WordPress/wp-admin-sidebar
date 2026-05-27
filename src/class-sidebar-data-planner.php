@@ -56,12 +56,12 @@ class Sidebar_Data_Planner {
 				// REST consumed by the customizer (A.2).
 				//
 				// `restUrl` is the fully-resolved layout endpoint. The default is
-				// the same-origin /wp-json/ path that resolves to the namespace
-				// `Sidebar_Rest::register_routes()` registers. Hosts override via
-				// the `wp_admin_sidebar_layout_rest_url` filter (e.g., a managed
-				// host that routes REST through a centralized public-api
-				// dispatcher rather than the standard /wp-json/ surface). The
-				// default works on plain WP.
+				// `rest_url( 'wp-admin-sidebar/v1/layout' )`, so plain WordPress
+				// can choose pretty `/wp-json/` routing or the
+				// `index.php?rest_route=/` fallback. Hosts override via the
+				// `wp_admin_sidebar_layout_rest_url` filter (e.g., a managed host
+				// that routes REST through a centralized public-api dispatcher
+				// rather than the standard REST surface).
 				//
 				// `restRoot` stays for back-compat with consumers that build
 				// their own URL; the customizer prefers `restUrl` when present.
@@ -88,11 +88,11 @@ class Sidebar_Data_Planner {
 	/**
 	 * Resolve the layout endpoint URL the customizer should POST to.
 	 *
-	 * Default is the same-origin /wp-json/wp-admin-sidebar/v1/layout, which is
-	 * what `Sidebar_Rest::register_routes()` exposes on plain WP installs.
-	 * Hosts that route REST through a centralized public-api dispatcher
-	 * (instead of the standard /wp-json/ surface) hook the filter to point
-	 * the customizer at their own endpoint URL.
+	 * Default is `rest_url( 'wp-admin-sidebar/v1/layout' )`, which lets plain
+	 * WordPress choose either pretty `/wp-json/` routing or the
+	 * `index.php?rest_route=/` fallback. Hosts that route REST through a
+	 * centralized public-api dispatcher hook the filter to point the customizer
+	 * at their own endpoint URL.
 	 *
 	 * The path is hardcoded rather than referencing `Sidebar_Rest::NAMESPACE` /
 	 * `::ROUTE` to remove the cross-class constant dependency that gherald
@@ -102,7 +102,7 @@ class Sidebar_Data_Planner {
 	 * the namespace ever needs to change, update both call sites in lockstep.
 	 */
 	private static function resolve_rest_url(): string {
-		$default = home_url( '/wp-json/wp-admin-sidebar/v1/layout' );
+		$default = rest_url( 'wp-admin-sidebar/v1/layout' );
 		$url     = (string) apply_filters( 'wp_admin_sidebar_layout_rest_url', $default );
 		// Legacy alias bridge — drop in v0.2.x.
 		$url = (string) apply_filters_deprecated(

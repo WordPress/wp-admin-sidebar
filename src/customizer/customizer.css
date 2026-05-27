@@ -366,7 +366,7 @@ body.wp-admin-sidebar-dragging #adminmenu li.menu-top.opensub div.wp-menu-image:
 }
 
 /* Customizer-only: viewport-bound the sidebar wrap and turn it into a flex
- * column so the plugin list scrolls internally and the Save / Cancel footer
+ * column so the plugin list scrolls internally and the customizer footer
  * stays pinned to the viewport bottom (DES-578).
  *
  * Default (non-customizer) mode keeps wp-admin's natural `body.sticky-menu`
@@ -415,7 +415,7 @@ body.wp-admin-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 	height: 0;
 }
 
-/* Save / Cancel dock at the bottom of the sidebar. Flex: 0 0 auto so the
+/* Auto-save footer docked at the bottom of the sidebar. Flex: 0 0 auto so the
  * footer takes its natural height and the plugin list above absorbs the
  * remaining viewport space.
  *
@@ -427,12 +427,6 @@ body.wp-admin-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 .wp-admin-sidebar-customize-footer {
 	flex: 0 0 auto;
 	display: flex;
-	/* Stacked, not side-by-side, per the Figma prototype. DOM order
-	 * is Cancel → Save (preserves the existing horizontal hierarchy
-	 * where Cancel was left / secondary and Save was right / primary),
-	 * so in column mode Cancel renders on top, Save below. Buttons
-	 * fill the wrap's natural width via the default cross-axis
-	 * stretch — no hardcoded width anywhere. */
 	flex-direction: column;
 	gap: 6px;
 	padding: 8px 12px;
@@ -441,9 +435,17 @@ body.wp-admin-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 	box-shadow: 0 -8px 12px -8px rgba( 0, 0, 0, 0.5 );
 }
 
-.wp-admin-sidebar-customize-footer__cancel,
-.wp-admin-sidebar-customize-footer__save {
-	/* No flex: 1 in column mode — buttons take their natural height
+.wp-admin-sidebar-customize-footer__status {
+	color: rgba( 240, 240, 241, 0.75 );
+	font-size: 12px;
+	font-family: var( --wp-admin-sidebar-font, 'SF Pro Text', sans-serif );
+	line-height: 1.4;
+}
+
+.wp-admin-sidebar-customize-footer__undo,
+.wp-admin-sidebar-customize-footer__retry,
+.wp-admin-sidebar-customize-footer__done {
+	/* No flex: 1 in column mode. Buttons take their natural height
 	 * and stretch to the wrap's width via align-items (default
 	 * `stretch` on the flex parent). */
 	flex: 0 0 auto;
@@ -454,19 +456,22 @@ body.wp-admin-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 	cursor: pointer;
 }
 
-.wp-admin-sidebar-customize-footer__cancel {
+.wp-admin-sidebar-customize-footer__undo,
+.wp-admin-sidebar-customize-footer__retry {
 	background: transparent;
 	border: 1px solid var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	color: var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 }
 
-.wp-admin-sidebar-customize-footer__save {
+.wp-admin-sidebar-customize-footer__done {
 	background: var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	border: 1px solid var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	color: #fff;
 }
 
-.wp-admin-sidebar-customize-footer__save[disabled] {
+.wp-admin-sidebar-customize-footer__undo[disabled],
+.wp-admin-sidebar-customize-footer__retry[disabled],
+.wp-admin-sidebar-customize-footer__done[disabled] {
 	opacity: 0.55;
 	cursor: not-allowed;
 }

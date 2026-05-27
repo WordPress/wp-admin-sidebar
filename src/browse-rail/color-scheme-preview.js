@@ -3,7 +3,7 @@
  * during live preview.
  *
  * The redesigned sidebar's accent (group label, customize icon, chevron,
- * focus rings, Save button, drag indicator) should match whichever admin
+ * focus rings, customizer buttons, drag indicator) should match whichever admin
  * colour scheme the user has active, including third-party schemes
  * registered via `wp_admin_css_color()`. Hard-coding per-scheme hex
  * values in our CSS would duplicate the values WP already ships in

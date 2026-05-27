@@ -119,6 +119,40 @@ export function recomputeDirty( state ) {
 }
 
 /**
+ * Replace the saved delta after an auto-save response without changing the
+ * current working delta. If the user made another move while the request was
+ * in flight, the working copy stays ahead and remains dirty.
+ *
+ * @param {DraftState} state
+ * @param {LayoutDelta} saved
+ * @returns {DraftState}
+ */
+export function updateSaved( state, saved ) {
+	const cloned = cloneDelta( saved );
+	return recomputeDirty( {
+		...state,
+		savedDelta: cloned,
+		isSaving: false,
+		saveError: null,
+	} );
+}
+
+/**
+ * Restore the working delta to a previous snapshot, used by Undo.
+ *
+ * @param {DraftState} state
+ * @param {LayoutDelta} working
+ * @returns {DraftState}
+ */
+export function restoreWorking( state, working ) {
+	return recomputeDirty( {
+		...state,
+		workingDelta: cloneDelta( working ),
+		saveError: null,
+	} );
+}
+
+/**
  * Move an item to a new position. Removes any prior override for the same
  * itemId, then appends the new one. The renderer applies overrides in array
  * order, with later overrides winning if duplicates ever sneak in.

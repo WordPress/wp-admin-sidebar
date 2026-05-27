@@ -33,8 +33,8 @@ src/
 │   ├── styles.css                      Group + signal CSS.
 │   └── icons/                          Inline SVG sources used by the rail.
 └── customizer/                         Customizer-mode JS. Loaded lazily on customize-button click.
-    ├── customizer.js                   Entry point. enterCustomizer, exitCustomizer, save.
-    ├── draft-state.js                  Pure state: createState, moveItem, resetItem, applySaved.
+    ├── customizer.js                   Entry point. enterCustomizer, exitCustomizer, auto-save, undo.
+    ├── draft-state.js                  Pure state: createState, moveItem, resetItem, saved/working deltas.
     ├── drag-drop.js                    Drag with synthetic ghost + drop indicator.
     ├── keyboard-reorder.js             Arrow keys + Enter/Space-to-pick semantics.
     ├── move-menu.js                    3-dot trigger + "Move to" popup.
@@ -72,12 +72,13 @@ browse-rail.js entry script runs       ← reads wpAdminSidebarData,
 [user clicks customize button]
 customizer.js dynamic-imported         ← lazy-loaded; entry into customizer mode
 ↓
-[user moves an item, clicks Save]
+[user moves an item]
 POST /wp-json/wp-admin-sidebar/v1/layout (or admin-ajax fallback)
 ↓
 [Sidebar_Rest::handle_post]
 validate_delta + storage->put_layouts  ← persists to user_meta (or host-bound storage)
 ↓
+[user clicks Done]
 exitCustomizer()                       ← back to default mode, body class restored
 ```
 
