@@ -325,7 +325,7 @@ body.wp-admin-sidebar-drop-hints-visible #adminmenu .wp-admin-sidebar-group__chi
 	left: 10px;
 	right: 10px;
 	height: 0;
-	border-top: 1px solid var( --wp-admin-sidebar-customizer-theme, #3858e9 );
+	border-top: 1px dashed var( --wp-admin-sidebar-customizer-theme, #3858e9 );
 	opacity: 0.42;
 	pointer-events: none;
 	transform: scaleX( 1 );
@@ -345,9 +345,19 @@ body.wp-admin-sidebar-drop-hints-visible #adminmenu .wp-admin-sidebar-group__chi
 	bottom: 0;
 }
 
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu > li.menu-top::before,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu > li.wp-admin-sidebar-group::before,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu .wp-admin-sidebar-group__children > li::before,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu > li.menu-top:last-child::after,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu > li.wp-admin-sidebar-group:last-child::after,
+body.wp-admin-sidebar-drop-hints-visible.wp-admin-sidebar-dragging #adminmenu .wp-admin-sidebar-group__children > li:last-child::after {
+	opacity: 0;
+	transform: scaleX( 0.7 );
+}
+
 /* During drag, suppress wp-admin's hover treatment on every top-level row
  * (DES-590). Goal: rows the cursor passes over look identical to their
- * non-hovered state; the drop indicator is the strongest placement signal.
+ * non-hovered state; the drop indicator is the only visual signal.
  *
  * A "general" CSS approach (one rule that disables all hover paint) doesn't
  * exist without nuking layout — `all: revert` would break inherited
