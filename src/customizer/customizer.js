@@ -22,6 +22,7 @@
 // cache-bust patterns".
 
 const BODY_MODE_CLASS = 'wp-admin-sidebar-mode-customize';
+const BODY_DROP_HINTS_CLASS = 'wp-admin-sidebar-drop-hints-visible';
 const REASSIGNABLE_CLASS = 'wp-admin-sidebar-item--reassignable';
 const GRIP_CLASS = 'wp-admin-sidebar-item__grip';
 const FOOTER_CLASS = 'wp-admin-sidebar-customize-footer';
@@ -103,7 +104,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 	// This represents the latest known saved layout at session start. Auto-save
 	// updates it only after the server catches up with the current DOM.
 	const savedLayoutSnapshot = captureLayoutSnapshot( sidebar );
-	document.body.classList.add( BODY_MODE_CLASS );
+	document.body.classList.add( BODY_MODE_CLASS, BODY_DROP_HINTS_CLASS );
 	// Strip core's `opensub` hover-intent class off any top-level item that
 	// happened to be flyout-open when the user entered customize. The CSS
 	// block in customizer.css hides the submenu wrapper outright, but the
@@ -225,7 +226,7 @@ export function exitCustomizer( { confirmIfDirty = false } = {} ) {
 		active.liveEl.parentNode.removeChild( active.liveEl );
 	}
 	window.removeEventListener( 'beforeunload', active.beforeunloadHandler );
-	document.body.classList.remove( BODY_MODE_CLASS );
+	document.body.classList.remove( BODY_MODE_CLASS, BODY_DROP_HINTS_CLASS );
 
 	const sidebar = document.querySelector( '#adminmenu' );
 	if ( sidebar ) {
