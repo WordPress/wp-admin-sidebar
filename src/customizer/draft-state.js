@@ -182,6 +182,17 @@ export function resetItem( state, itemId ) {
 }
 
 /**
+ * Drop every override (revert the whole sidebar to its default layout). The
+ * counterpart to resetItem for the global "Reset all to default" action.
+ *
+ * @param {DraftState} state
+ * @returns {DraftState}
+ */
+export function resetAll( state ) {
+	return recomputeDirty( { ...state, workingDelta: { ...state.workingDelta, overrides: [] } } );
+}
+
+/**
  * Mark the start of a drag. Does not mutate the delta.
  *
  * @param {DraftState} state

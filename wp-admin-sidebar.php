@@ -146,6 +146,7 @@ add_action(
 			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/drag-drop.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/keyboard-reorder.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/move-menu.js',
+			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/reset-all-modal.js',
 			WP_ADMIN_SIDEBAR_DIR . 'src/customizer/customizer.css',
 		);
 		$max_mtime = 0;
@@ -170,6 +171,14 @@ add_action(
 			$ver . '.' . $max_mtime,
 			true
 		);
+
+		// The customizer's "Reset all to default" confirmation uses the core
+		// Modal component. Enqueue wp-components (pulls wp-element) + its styles
+		// so the global wp.components / wp.element and modal chrome are available.
+		// These are classic scripts; they run before the deferred ES module
+		// entry, so the globals are ready when the customizer code executes.
+		wp_enqueue_script( 'wp-components' );
+		wp_enqueue_style( 'wp-components' );
 	}
 );
 

@@ -483,11 +483,49 @@ body.wp-admin-sidebar-mode-customize #adminmenu::-webkit-scrollbar {
 	box-shadow: 0 -8px 12px -8px rgba( 0, 0, 0, 0.5 );
 }
 
-.wp-admin-sidebar-customize-footer__status {
+/* Tertiary "Reset all to default" action. Quieter than Undo/Done: borderless,
+ * muted text, icon + label. Sits above Undo so the action hierarchy reads
+ * item → all. */
+.wp-admin-sidebar-customize-footer__reset-all {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 0;
+	border-radius: 3px;
+	background: transparent;
 	color: rgba( 240, 240, 241, 0.75 );
-	font-size: 12px;
+	font-size: var( --wp-admin-sidebar-button-font-size, 13px );
 	font-family: var( --wp-admin-sidebar-font, 'SF Pro Text', sans-serif );
-	line-height: 1.4;
+	cursor: pointer;
+}
+
+.wp-admin-sidebar-customize-footer__reset-all:hover:not( [disabled] ),
+.wp-admin-sidebar-customize-footer__reset-all:focus-visible:not( [disabled] ) {
+	color: #fff;
+	background: rgba( 240, 240, 241, 0.08 );
+}
+
+.wp-admin-sidebar-customize-footer__reset-all[disabled] {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.wp-admin-sidebar-customize-footer__reset-all-icon {
+	flex: 0 0 auto;
+	display: block;
+}
+
+/* Reset-all confirmation modal. Rendered into a body-appended container (outside
+ * #adminmenu), so these selectors are intentionally unscoped. Modal chrome /
+ * width comes from the core wp-components stylesheet + size="small". */
+.wp-admin-sidebar-reset-all-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 16px;
+	margin-top: 24px;
 }
 
 .wp-admin-sidebar-customize-footer__undo,
