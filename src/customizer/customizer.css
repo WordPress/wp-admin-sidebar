@@ -128,12 +128,24 @@ body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 28px;
+	width: 0;
 	height: 34px;
 	color: inherit;
 	cursor: pointer;
 	font-size: 16px;
 	line-height: 1;
+	opacity: 0;
+	overflow: hidden;
+	pointer-events: none;
+	transition: opacity 120ms ease, width 120ms ease;
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable:hover .wp-admin-sidebar-item__more,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable:focus-within .wp-admin-sidebar-item__more,
+body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more[aria-expanded="true"] {
+	width: 28px;
+	opacity: 1;
+	pointer-events: auto;
 }
 
 body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-item__more:focus-visible {

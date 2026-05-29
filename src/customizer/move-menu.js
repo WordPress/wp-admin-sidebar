@@ -37,16 +37,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		injectTrigger( li );
 	}
 
-	function onClick( ev ) {
-		if ( openMenu && ! ev.target.closest( '.' + MENU_CLASS ) && ! ev.target.closest( '.' + TRIGGER_CLASS ) ) {
-			closeMenu();
-		}
-		const trigger = ev.target instanceof Element ? ev.target.closest( '.' + TRIGGER_CLASS ) : null;
-		if ( ! trigger ) {
-			return;
-		}
-		ev.preventDefault();
-		ev.stopPropagation();
+	function toggleForTrigger( trigger ) {
 		const li = trigger.closest( 'li.wp-admin-sidebar-item--reassignable' );
 		if ( ! li ) {
 			return;
@@ -59,7 +50,28 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		openFor( li, trigger );
 	}
 
+	function onClick( ev ) {
+		if ( openMenu && ! ev.target.closest( '.' + MENU_CLASS ) && ! ev.target.closest( '.' + TRIGGER_CLASS ) ) {
+			closeMenu();
+		}
+		const trigger = ev.target instanceof Element ? ev.target.closest( '.' + TRIGGER_CLASS ) : null;
+		if ( ! trigger ) {
+			return;
+		}
+		ev.preventDefault();
+		ev.stopPropagation();
+		toggleForTrigger( trigger );
+	}
+
 	function onKeyDown( ev ) {
+		const trigger = ev.target instanceof Element ? ev.target.closest( '.' + TRIGGER_CLASS ) : null;
+		if ( trigger && ( ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar' ) ) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			toggleForTrigger( trigger );
+			return;
+		}
+
 		if ( ev.key === 'Escape' && openMenu ) {
 			ev.preventDefault();
 			const trigger = openMenu.trigger;
@@ -147,6 +159,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		positionMenuRelativeTo( menu, trigger );
 		menu.style.visibility = '';
 		openMenu = { menuEl: menu, trigger };
+		trigger.setAttribute( 'aria-expanded', 'true' );
 		// Close on scroll / resize. Re-positioning while the user pans
 		// would be jittery and click-outside already handles regular
 		// dismissal. Scroll events on element targets don't bubble, so
@@ -301,6 +314,7 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 
 	function closeMenu() {
 		if ( ! openMenu ) return;
+		openMenu.trigger.setAttribute( 'aria-expanded', 'false' );
 		if ( openMenu.menuEl.parentNode ) {
 			openMenu.menuEl.parentNode.removeChild( openMenu.menuEl );
 		}
@@ -457,6 +471,7 @@ function injectTrigger( li ) {
 	trigger.setAttribute( 'tabindex', '0' );
 	trigger.setAttribute( 'aria-label', 'More options' );
 	trigger.setAttribute( 'aria-haspopup', 'menu' );
+	trigger.setAttribute( 'aria-expanded', 'false' );
 	trigger.textContent = '⋯';
 	link.appendChild( trigger );
 }
