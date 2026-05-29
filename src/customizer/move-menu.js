@@ -37,13 +37,16 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 		injectTrigger( li );
 	}
 
-	function toggleForTrigger( trigger ) {
+	function toggleForTrigger( trigger, options = {} ) {
 		const li = trigger.closest( 'li.wp-admin-sidebar-item--reassignable' );
 		if ( ! li ) {
 			return;
 		}
 		if ( openMenu && openMenu.trigger === trigger ) {
 			closeMenu();
+			if ( options.blurOnClose && typeof trigger.blur === 'function' ) {
+				trigger.blur();
+			}
 			return;
 		}
 		closeMenu();
@@ -51,16 +54,21 @@ export function attachMoveMenu( sidebar, navModel, controller ) {
 	}
 
 	function onClick( ev ) {
-		if ( openMenu && ! ev.target.closest( '.' + MENU_CLASS ) && ! ev.target.closest( '.' + TRIGGER_CLASS ) ) {
+		const target = ev.target instanceof Element ? ev.target : null;
+		if ( openMenu && target && ! target.closest( '.' + MENU_CLASS ) && ! target.closest( '.' + TRIGGER_CLASS ) ) {
+			const trigger = openMenu.trigger;
 			closeMenu();
+			if ( typeof trigger.blur === 'function' ) {
+				trigger.blur();
+			}
 		}
-		const trigger = ev.target instanceof Element ? ev.target.closest( '.' + TRIGGER_CLASS ) : null;
+		const trigger = target ? target.closest( '.' + TRIGGER_CLASS ) : null;
 		if ( ! trigger ) {
 			return;
 		}
 		ev.preventDefault();
 		ev.stopPropagation();
-		toggleForTrigger( trigger );
+		toggleForTrigger( trigger, { blurOnClose: true } );
 	}
 
 	function onKeyDown( ev ) {
