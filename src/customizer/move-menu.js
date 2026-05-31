@@ -480,7 +480,7 @@ function injectTrigger( li ) {
 	trigger.setAttribute( 'aria-label', 'More options' );
 	trigger.setAttribute( 'aria-haspopup', 'menu' );
 	trigger.setAttribute( 'aria-expanded', 'false' );
-	trigger.textContent = '⋯';
+	trigger.textContent = '⋮';
 	link.appendChild( trigger );
 }
 
