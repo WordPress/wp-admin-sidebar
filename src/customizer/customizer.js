@@ -73,11 +73,12 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 	}
 
 	const bust = resolveBust();
-	const [ draftState, dragDrop, keyboardReorder, moveMenu ] = await Promise.all( [
+	const [ draftState, dragDrop, keyboardReorder, moveMenu, svgIconPaint ] = await Promise.all( [
 		import( `./draft-state.js?ver=${ bust }` ),
 		import( `./drag-drop.js?ver=${ bust }` ),
 		import( `./keyboard-reorder.js?ver=${ bust }` ),
 		import( `./move-menu.js?ver=${ bust }` ),
+		import( `../svg-icon-paint.js?ver=${ bust }` ),
 	] );
 	const {
 		createState,
@@ -150,6 +151,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 	const detachMenu = attachMoveMenu( sidebar, navModel, controller );
 	const detachLinkSuppress = suppressReassignableLinkClicks( sidebar );
 	const detachCollapseMenu = disableCollapseMenuFocus();
+	const detachSvgPainter = suppressSvgIconHoverPaint( sidebar, svgIconPaint );
 	const detachEscape = attachGlobalEscapeShortcut();
 
 	const footerEl = renderFooter( sidebar, function onUndo() {
@@ -171,7 +173,15 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 
 	active = {
 		state,
-		detachFns: [ detachDrag, detachKeyboard, detachMenu, detachLinkSuppress, detachCollapseMenu, detachEscape ],
+		detachFns: [
+			detachDrag,
+			detachKeyboard,
+			detachMenu,
+			detachLinkSuppress,
+			detachCollapseMenu,
+			detachSvgPainter,
+			detachEscape,
+		],
 		footerEl,
 		liveEl,
 		beforeunloadHandler,
@@ -387,6 +397,77 @@ function disableCollapseMenuFocus() {
 		} else {
 			target.setAttribute( 'aria-disabled', prevAriaDisabled );
 		}
+	};
+}
+
+/**
+ * WordPress core's svg-painter rewrites base64 SVG menu icons on hover by
+ * changing their inline background image. CSS cannot override that inline
+ * repaint, so keep sidebar SVG icons pinned to the customize-mode item
+ * color while customize mode is active.
+ *
+ * This covers plugins like Yoast that use `div.wp-menu-image.svg` instead
+ * of a dashicon `::before` glyph or an `<img>` tag.
+ */
+function suppressSvgIconHoverPaint( sidebar, svgIconPaint ) {
+	if (
+		! svgIconPaint ||
+		typeof svgIconPaint.paintSvgIcons !== 'function' ||
+		typeof svgIconPaint.restoreCoreSvgIcons !== 'function'
+	) {
+		return function detach() {};
+	}
+
+	const selector = 'li.menu-top:not(.wp-admin-sidebar-group) div.wp-menu-image.svg';
+	const events = [ 'mouseover', 'mouseout', 'focusin', 'focusout' ];
+
+	function paintBase() {
+		svgIconPaint.paintSvgIcons( sidebar, selector, getSidebarItemColor() );
+	}
+
+	function getSidebarItemColor() {
+		const color = window
+			.getComputedStyle( document.documentElement )
+			.getPropertyValue( '--wp-admin-sidebar-item-fg' )
+			.trim();
+
+		return color || '#f0f0f1';
+	}
+
+	function forcePaintBase() {
+		paintBase();
+
+		const repaint = () => paintBase();
+		if ( typeof window.queueMicrotask === 'function' ) {
+			window.queueMicrotask( repaint );
+		} else {
+			Promise.resolve().then( repaint );
+		}
+		window.requestAnimationFrame( repaint );
+		window.setTimeout( repaint, 120 );
+	}
+
+	function schedulePaintBase( ev ) {
+		const target = ev.target instanceof Element ? ev.target : null;
+		const li = target ? target.closest( 'li.menu-top:not(.wp-admin-sidebar-group)' ) : null;
+		if ( ! li || ! li.querySelector( 'div.wp-menu-image.svg' ) ) {
+			return;
+		}
+
+		ev.stopPropagation();
+		forcePaintBase();
+	}
+
+	forcePaintBase();
+	for ( const eventName of events ) {
+		sidebar.addEventListener( eventName, schedulePaintBase, true );
+	}
+
+	return function detach() {
+		for ( const eventName of events ) {
+			sidebar.removeEventListener( eventName, schedulePaintBase, true );
+		}
+		svgIconPaint.restoreCoreSvgIcons( sidebar, selector );
 	};
 }
 

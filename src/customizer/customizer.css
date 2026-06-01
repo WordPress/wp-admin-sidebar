@@ -84,10 +84,49 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassi
 	box-shadow: none;
 }
 
-body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable.opensub div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:focus div.wp-menu-image:before {
-	color: inherit;
+/* Dashicon glyphs stay at one customize-mode brightness across idle, hover,
+ * focus, and `.opensub`. WordPress core and admin color schemes otherwise
+ * repaint `div.wp-menu-image::before` on hover, which makes inert rows flash
+ * as the cursor crosses the sidebar. */
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group) div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group):hover div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group).opensub div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group) > a:focus div.wp-menu-image:before {
+	color: var( --wp-admin-sidebar-item-fg, #f0f0f1 );
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-group:hover .wp-admin-sidebar-group__children li.menu-top:not( :hover ) .wp-menu-image::before {
+	color: var( --wp-admin-sidebar-item-fg, #f0f0f1 );
+}
+
+/* Image-icon parity with dashicons inside reassignable rows.
+ *
+ * wp-admin core ships:
+ *   #adminmenu div.wp-menu-image img                          { opacity: 0.6; }
+ *   #adminmenu li:hover    div.wp-menu-image img,
+ *   #adminmenu li.opensub  div.wp-menu-image img,
+ *   #adminmenu li.wp-has-current-submenu div.wp-menu-image img,
+ *   #adminmenu li.current  div.wp-menu-image img              { opacity: 1; }
+ *
+ * Plugins that ship an <img> logo (Elementor, Jetpack, UpdraftPlus, …) sit
+ * dimmer than dashicon neighbours at idle (0.6) and pop to full opacity on
+ * hover / opensub. The mismatched idle brightness reads as "that one icon
+ * has a different colour" and the hover pop makes plugin rows flicker as
+ * the cursor moves through the list — both unwanted in customize mode,
+ * where rows are inert by design and the only interactive affordance is
+ * the grip handle (DES-605).
+ *
+ * Lock the img opacity to 1 across idle / hover / opensub / focus so every
+ * reassignable row renders at the same brightness regardless of cursor
+ * position. Picking 1 (not 0.6) matches the "active" state wp-admin already
+ * uses for current / opensub rows, and lines up with the dashicon `::before`
+ * rule above.
+ */
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable div.wp-menu-image img,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover div.wp-menu-image img,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable.opensub div.wp-menu-image img,
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:focus div.wp-menu-image img {
+	opacity: 1;
 }
 
 /* Right-edge arrow / "submenu opens here" indicator suppression. wp-admin
@@ -229,22 +268,6 @@ body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-group--reorder-locked .wp
 	cursor: not-allowed;
 	opacity: 0.4;
 	pointer-events: none;
-}
-
-/* Icon (the dashicon glyph rendered via `.wp-menu-image::before`) stays at
- * its idle color across `:hover`, `.opensub`, and `> a:focus` for inert
- * rows. DES-605's "no hover/selected paint" rule is read literally — no
- * soft-graying carve-out. `color: inherit` falls back to the icon
- * container's idle color rather than overriding to a fixed value, so the
- * rule is host-portable (vanilla wp-admin, WPCOM, etc. — whatever the
- * host's idle icon color is, that's what shows). Suppresses, in
- * particular, WPCOM's
- * `#adminmenu li a:focus div.wp-menu-image::before, ...:hover ..., ...opensub ...
- * { color: rgb(114, 174, 230); }` light-blue paint. */
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group):hover div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group).opensub div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group) > a:focus div.wp-menu-image:before {
-	color: inherit;
 }
 
 /* Floating ghost element follows the cursor while dragging. The ghost is a
