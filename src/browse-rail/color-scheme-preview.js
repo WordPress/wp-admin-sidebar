@@ -10,12 +10,16 @@
  * `wp-admin/css/colors/<scheme>/colors.min.css` and would silently
  * mismatch for any scheme we hadn't enumerated.
  *
- * Strategy: extract the accent from a wp-admin native element that's
- * painted per-scheme — specifically `.button-primary`'s `background-
- * color`, which is the canonical "scheme highlight" wp-admin uses for
- * primary buttons, sidebar current-item background, and link colours.
- * Write that into two CSS custom properties on `:root`:
+ * Strategy: extract values from wp-admin native elements that are painted
+ * per-scheme. The accent comes from `.button-primary`'s `background-color`,
+ * which is the canonical "scheme highlight" wp-admin uses for primary
+ * buttons, sidebar current-item background, and link colours. Sidebar item
+ * foregrounds come from a hidden native admin-menu row. Write those values
+ * into CSS custom properties on `:root`:
  *
+ *   --wp-admin-sidebar-item-fg
+ *   --wp-admin-sidebar-icon-idle-fg
+ *   --wp-admin-sidebar-img-icon-idle-opacity
  *   --wp-admin-sidebar-group-label-fg
  *   --wp-admin-sidebar-customizer-theme
  *
@@ -40,9 +44,12 @@
  * @package WP_Admin_Sidebar
  */
 
-const TOKEN_GROUP_LABEL = '--wp-admin-sidebar-group-label-fg';
-const TOKEN_CUSTOMIZER  = '--wp-admin-sidebar-customizer-theme';
-const COLORS_LINK_ID    = 'colors-css';
+const TOKEN_ITEM_FG          = '--wp-admin-sidebar-item-fg';
+const TOKEN_ICON_IDLE_FG     = '--wp-admin-sidebar-icon-idle-fg';
+const TOKEN_IMG_IDLE_OPACITY = '--wp-admin-sidebar-img-icon-idle-opacity';
+const TOKEN_GROUP_LABEL      = '--wp-admin-sidebar-group-label-fg';
+const TOKEN_CUSTOMIZER       = '--wp-admin-sidebar-customizer-theme';
+const COLORS_LINK_ID         = 'colors-css';
 const SYNC_FALLBACK_DELAYS = [ 100, 500, 1000 ];
 
 /**
@@ -85,6 +92,8 @@ function syncAccentAfterStylesheetSwap( colorsLink ) {
  * inserted, measured, and removed synchronously — no layout impact.
  */
 function syncAccentFromNative() {
+	syncSidebarTokensFromNative();
+
 	const probe = document.createElement( 'button' );
 	probe.type = 'button';
 	probe.className = 'button button-primary';
@@ -104,4 +113,97 @@ function syncAccentFromNative() {
 	}
 	document.documentElement.style.setProperty( TOKEN_GROUP_LABEL, accent );
 	document.documentElement.style.setProperty( TOKEN_CUSTOMIZER, accent );
+}
+
+/**
+ * Read wp-admin sidebar item colors from a hidden native menu row. This keeps
+ * grouped children aligned with the active admin color scheme when the group
+ * wrapper itself is hovered.
+ */
+function syncSidebarTokensFromNative() {
+	const menu = document.getElementById( 'adminmenu' );
+	if ( ! ( menu instanceof HTMLElement ) ) {
+		return;
+	}
+
+	const row = document.createElement( 'li' );
+	row.className = 'menu-top wp-admin-sidebar-token-probe';
+	row.style.position = 'absolute';
+	row.style.left = '-9999px';
+	row.style.top = '-9999px';
+	row.style.pointerEvents = 'none';
+	row.style.visibility = 'hidden';
+
+	const link = document.createElement( 'a' );
+	link.className = 'menu-top';
+	link.href = '#';
+
+	const icon = document.createElement( 'div' );
+	icon.className = 'wp-menu-image';
+
+	const img = document.createElement( 'img' );
+	img.alt = '';
+	img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+
+	const name = document.createElement( 'div' );
+	name.className = 'wp-menu-name';
+	name.textContent = 'Probe';
+
+	icon.appendChild( img );
+	link.append( icon, name );
+	row.appendChild( link );
+	menu.appendChild( row );
+
+	const itemColor = window.getComputedStyle( link ).color;
+	const iconColor = window.getComputedStyle( icon, '::before' ).color;
+	const imgOpacity = window.getComputedStyle( img ).opacity;
+
+	row.remove();
+
+	if ( isUsableCssValue( itemColor ) ) {
+		document.documentElement.style.setProperty( TOKEN_ITEM_FG, itemColor );
+	}
+	if ( isUsableCssValue( iconColor ) ) {
+		document.documentElement.style.setProperty( TOKEN_ICON_IDLE_FG, iconColor );
+	}
+	const iconOpacity = getOpacityFromCssColor( iconColor );
+	if ( iconOpacity !== null ) {
+		document.documentElement.style.setProperty( TOKEN_IMG_IDLE_OPACITY, String( iconOpacity ) );
+	} else if ( imgOpacity ) {
+		document.documentElement.style.setProperty( TOKEN_IMG_IDLE_OPACITY, imgOpacity );
+	}
+}
+
+function isUsableCssValue( value ) {
+	return !! value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent';
+}
+
+function getOpacityFromCssColor( value ) {
+	if ( ! value ) {
+		return null;
+	}
+
+	const slashAlpha = value.match( /\/\s*([0-9.]+)\s*\)$/ );
+	if ( slashAlpha ) {
+		return clampOpacity( Number.parseFloat( slashAlpha[ 1 ] ) );
+	}
+
+	const rgba = value.match( /^rgba?\((.+)\)$/i );
+	if ( ! rgba ) {
+		return null;
+	}
+
+	const parts = rgba[ 1 ].split( ',' ).map( ( part ) => part.trim() );
+	if ( parts.length < 4 ) {
+		return 1;
+	}
+
+	return clampOpacity( Number.parseFloat( parts[ 3 ] ) );
+}
+
+function clampOpacity( value ) {
+	if ( Number.isNaN( value ) ) {
+		return null;
+	}
+	return Math.max( 0, Math.min( 1, value ) );
 }

@@ -84,10 +84,19 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassi
 	box-shadow: none;
 }
 
-body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable.opensub div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:focus div.wp-menu-image:before {
-	color: inherit;
+/* Dashicon glyphs stay at one customize-mode brightness across idle, hover,
+ * focus, and `.opensub`. WordPress core and admin color schemes otherwise
+ * repaint `div.wp-menu-image::before` on hover, which makes inert rows flash
+ * as the cursor crosses the sidebar. */
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group) div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group):hover div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group).opensub div.wp-menu-image:before,
+body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-group) > a:focus div.wp-menu-image:before {
+	color: var( --wp-admin-sidebar-item-fg, #f0f0f1 );
+}
+
+body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-group:hover .wp-admin-sidebar-group__children li.menu-top:not( :hover ) .wp-menu-image::before {
+	color: var( --wp-admin-sidebar-item-fg, #f0f0f1 );
 }
 
 /* Image-icon parity with dashicons inside reassignable rows.
@@ -110,9 +119,8 @@ body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassi
  * Lock the img opacity to 1 across idle / hover / opensub / focus so every
  * reassignable row renders at the same brightness regardless of cursor
  * position. Picking 1 (not 0.6) matches the "active" state wp-admin already
- * uses for current / opensub rows — visually consistent with the dashicon
- * `::before` rules above, which inherit the menu's idle text colour at full
- * opacity.
+ * uses for current / opensub rows, and lines up with the dashicon `::before`
+ * rule above.
  */
 body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable div.wp-menu-image img,
 body.wp-admin-sidebar-mode-customize #adminmenu li.wp-admin-sidebar-item--reassignable > a:hover div.wp-menu-image img,
@@ -260,22 +268,6 @@ body.wp-admin-sidebar-mode-customize .wp-admin-sidebar-group--reorder-locked .wp
 	cursor: not-allowed;
 	opacity: 0.4;
 	pointer-events: none;
-}
-
-/* Icon (the dashicon glyph rendered via `.wp-menu-image::before`) stays at
- * its idle color across `:hover`, `.opensub`, and `> a:focus` for inert
- * rows. DES-605's "no hover/selected paint" rule is read literally — no
- * soft-graying carve-out. `color: inherit` falls back to the icon
- * container's idle color rather than overriding to a fixed value, so the
- * rule is host-portable (vanilla wp-admin, WPCOM, etc. — whatever the
- * host's idle icon color is, that's what shows). Suppresses, in
- * particular, WPCOM's
- * `#adminmenu li a:focus div.wp-menu-image::before, ...:hover ..., ...opensub ...
- * { color: rgb(114, 174, 230); }` light-blue paint. */
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group):hover div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group).opensub div.wp-menu-image:before,
-body.wp-admin-sidebar-mode-customize #adminmenu li.menu-top:not(.wp-admin-sidebar-item--reassignable):not(.wp-admin-sidebar-group) > a:focus div.wp-menu-image:before {
-	color: inherit;
 }
 
 /* Floating ghost element follows the cursor while dragging. The ghost is a
