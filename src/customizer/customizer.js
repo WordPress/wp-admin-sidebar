@@ -84,6 +84,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 		createState,
 		moveItem,
 		resetItem,
+		resetAll,
 		beginDrag,
 		endDrag,
 		cloneDelta,
@@ -97,7 +98,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 
 	// Stash helpers used by the module-scope auto-save and undo flows so they
 	// stay available across exit / re-enter cycles.
-	const helpers = { cloneDelta, deltasEqual, updateSaved, restoreWorking };
+	const helpers = { cloneDelta, deltasEqual, updateSaved, restoreWorking, resetAll };
 
 	const state = createState( navModel, savedDelta );
 	const liveEl = createLiveRegion();
@@ -160,6 +161,11 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 		retryAutosave();
 	}, function onDone() {
 		exitCustomizer( { confirmIfDirty: true } );
+	}, async function onResetAll() {
+		// Lazy-load the modal (and, transitively, exercise wp.components) only
+		// when the user actually reaches for the reset action.
+		const { openResetAllModal } = await import( `./reset-all-modal.js?ver=${ bust }` );
+		openResetAllModal( { onConfirm: resetAllToDefault } );
 	} );
 
 	const beforeunloadHandler = ( ev ) => {
@@ -190,6 +196,7 @@ export async function enterCustomizer( sidebar, navModel, savedDelta, options ) 
 		opensubSnapshot,
 		helpers,
 		sidebar,
+		navModel,
 		undoStack: [],
 		pendingSaveDelta: null,
 		savePromise: null,
@@ -543,17 +550,35 @@ function undecorateReassignableItems( sidebar ) {
 	}
 }
 
+// Circular-arrow "reset" glyph for the global reset control. Inline SVG keeps
+// rendering consistent across platforms (unlike a Unicode arrow glyph).
+const RESET_ALL_ICON =
+	'<svg class="' + FOOTER_CLASS + '__reset-all-icon" width="15" height="15" viewBox="0 0 24 24" ' +
+	'aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">' +
+	'<path fill="currentColor" d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 ' +
+	'7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 ' +
+	'3.14.69 4.22 1.78L13 11h7V4z"/></svg>';
+
 /**
- * Render auto-save status and compact Undo / Done controls at the bottom of
- * the sidebar.
+ * Render the compact Reset all / Undo / Done controls at the bottom of the
+ * sidebar. Save state is surfaced on the Done button (it reads "Saving…" while
+ * a save is in flight) rather than a standalone status line, leaving room for
+ * the tertiary Reset all action.
  */
-function renderFooter( sidebar, onUndo, onRetry, onDone ) {
+function renderFooter( sidebar, onUndo, onRetry, onDone, onResetAll ) {
 	const footer = document.createElement( 'div' );
 	footer.className = FOOTER_CLASS;
 
-	const status = document.createElement( 'div' );
-	status.className = FOOTER_CLASS + '__status';
-	status.textContent = 'Changes save automatically.';
+	const resetAll = document.createElement( 'button' );
+	resetAll.type = 'button';
+	resetAll.className = FOOTER_CLASS + '__reset-all';
+	resetAll.innerHTML = RESET_ALL_ICON;
+	const resetAllLabel = document.createElement( 'span' );
+	resetAllLabel.className = FOOTER_CLASS + '__reset-all-label';
+	resetAllLabel.textContent = 'Reset all';
+	resetAll.appendChild( resetAllLabel );
+	resetAll.disabled = true;
+	resetAll.addEventListener( 'click', onResetAll );
 
 	const undo = document.createElement( 'button' );
 	undo.type = 'button';
@@ -575,7 +600,7 @@ function renderFooter( sidebar, onUndo, onRetry, onDone ) {
 	done.textContent = 'Done';
 	done.addEventListener( 'click', onDone );
 
-	footer.appendChild( status );
+	footer.appendChild( resetAll );
 	footer.appendChild( undo );
 	footer.appendChild( retry );
 	footer.appendChild( done );
@@ -585,22 +610,16 @@ function renderFooter( sidebar, onUndo, onRetry, onDone ) {
 
 function updateFooter() {
 	if ( ! active ) return;
-	const status = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__status' );
+	const resetAll = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__reset-all' );
 	const undo = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__undo' );
 	const retry = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__retry' );
 	const done = active.footerEl.querySelector( '.' + FOOTER_CLASS + '__done' );
-	if ( status ) {
-		if ( active.state.saveError ) {
-			status.textContent = active.state.saveError.message || 'Save failed.';
-		} else if ( active.state.isSaving || active.pendingSaveDelta ) {
-			status.textContent = 'Saving...';
-		} else if ( active.state.isDirty ) {
-			status.textContent = 'Unsaved changes.';
-		} else if ( active.lastSavedAt ) {
-			status.textContent = 'Saved.';
-		} else {
-			status.textContent = 'Changes save automatically.';
-		}
+	const isSaving = active.state.isSaving || !! active.pendingSaveDelta;
+	if ( resetAll ) {
+		// Nothing to reset when no overrides remain; also disabled while a drag,
+		// save, or pending save is in flight.
+		resetAll.disabled =
+			active.state.workingDelta.overrides.length === 0 || isSaving || !! active.state.activeDrag;
 	}
 	if ( undo ) {
 		undo.disabled = active.undoStack.length === 0 || !! active.state.activeDrag;
@@ -610,7 +629,9 @@ function updateFooter() {
 		retry.disabled = active.state.isSaving;
 	}
 	if ( done ) {
-		done.disabled = active.state.isSaving || !! active.pendingSaveDelta;
+		// The Done button doubles as the save indicator.
+		done.textContent = isSaving ? 'Saving…' : 'Done';
+		done.disabled = isSaving;
 	}
 }
 
@@ -738,11 +759,90 @@ function commitWorkingChange( itemId, details, mutateState ) {
 	return true;
 }
 
+/**
+ * Global "Reset all to default": drop every override and snap each reassignable
+ * row back to its baseline (navModel) slot. One undoable operation — a single
+ * Undo restores the entire pre-reset layout.
+ */
+function resetAllToDefault() {
+	if ( ! active || active.state.activeDrag ) {
+		return;
+	}
+	if ( active.state.workingDelta.overrides.length === 0 ) {
+		announce( 'The sidebar is already at the default layout.' );
+		return;
+	}
+
+	// Snapshot the current DOM positions and working delta BEFORE mutating, so
+	// the undo frame can restore both in one step.
+	const restoreSnapshot = captureLayoutSnapshot( active.sidebar );
+	const previousDelta = active.helpers.cloneDelta( active.state.workingDelta );
+
+	active.state = active.helpers.resetAll( active.state );
+	restoreBaselineLayout( active.sidebar, active.navModel );
+
+	active.undoStack.push( { restoreSnapshot, previousDelta, label: 'all items' } );
+	if ( active.undoStack.length > MAX_UNDO_STACK ) {
+		active.undoStack.shift();
+	}
+
+	scheduleAutosave();
+	announce( 'Reset all items to their default positions.' );
+	updateFooter();
+}
+
+/**
+ * Reorder every reassignable row to its baseline (navModel) position, reusing
+ * moveItemElementToPosition() so placement matches the rest of the system.
+ *
+ * Groups are restored BEFORE top-level: pulling group-defaulting items back into
+ * their group container first removes them from the top-level row list, so the
+ * subsequent top-level index math isn't thrown off by items that are only
+ * temporarily sitting at the top level. Within each container, ascending
+ * baseline order means each placement leaves the earlier rows already correct.
+ *
+ * @param {HTMLElement} sidebar
+ * @param {Object}      navModel
+ */
+function restoreBaselineLayout( sidebar, navModel ) {
+	if ( ! sidebar || ! navModel ) {
+		return;
+	}
+	const place = ( child, index, position ) => {
+		if ( ! child || ! child.reassignable ) {
+			return;
+		}
+		const li = findItemById( sidebar, child.itemId );
+		if ( li ) {
+			moveItemElementToPosition( sidebar, li, { ...position, index } );
+		}
+	};
+	for ( const group of navModel.groups || [] ) {
+		( group.children || [] ).forEach( ( child, index ) => {
+			place( child, index, { kind: 'in_group', group_id: group.id } );
+		} );
+	}
+	( navModel.top_level || [] ).forEach( ( child, index ) => {
+		place( child, index, { kind: 'top_level' } );
+	} );
+}
+
 function undoLastChange() {
 	if ( ! active || active.state.activeDrag || active.undoStack.length === 0 ) {
 		return;
 	}
 	const frame = active.undoStack.pop();
+
+	// Snapshot frames (from "Reset all") restore the whole pre-reset layout.
+	if ( frame.restoreSnapshot ) {
+		restoreLayoutSnapshot( frame.restoreSnapshot );
+		active.state = active.helpers.restoreWorking( active.state, frame.previousDelta );
+		scheduleAutosave();
+		announce( 'Undid reset of all items.' );
+		updateFooter();
+		return;
+	}
+
 	const li = findItemById( active.sidebar, frame.itemId );
 	if ( ! li || ! moveItemElementToPosition( active.sidebar, li, frame.previousPosition ) ) {
 		active.undoStack.push( frame );
